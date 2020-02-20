@@ -26,6 +26,10 @@ def simulate_data(k=GPy.kern.RBF(1)):
 
 
 def plot_covariance_matrix(cov_matrix):
+    """
+    Plot covariance matrix.
+    :param cov_matrix: covariance matrix to be plotted
+    """
     fig, ax = plt.subplots(figsize=(8, 8))
     im = ax.imshow(cov_matrix, interpolation='none')
     fig.colorbar(im)
@@ -34,6 +38,12 @@ def plot_covariance_matrix(cov_matrix):
 
 
 def create_posterior_object(m, samples):
+    """
+    Create a NormalPosterior object.
+    :param m: GP with which to create posterior
+    :param samples: function inputs to create the posterior at
+    :return:
+    """
     mu, covar = m.predict_noiseless(samples, full_cov=True)
     variances = covar.diagonal()
     variances = np.reshape(variances, (len(samples), 1))
@@ -41,12 +51,27 @@ def create_posterior_object(m, samples):
 
 
 def KL_divergence(model_1, model_2, samples):
+    """
+    Determine KL divergence between the posteriors of two GPs
+    :param model_1:
+    :param model_2:
+    :param samples: function inputs over which the posteriors are created
+    :return:
+    """
     posterior_1 = create_posterior_object(model_1, samples)
     posterior_2 = create_posterior_object(model_2, samples)
     return posterior_1.KL(posterior_2)
 
 
 def create_full_gp(X, y, kernel_type=DEFAULT_KERNEL, plot=True):
+    """
+    Create non-sparse Gaussian Process.
+    :param X: inputs
+    :param y: noisy function values at inputs
+    :param kernel_type: class of kernel
+    :param plot: whether to plot the posterior
+    :return:
+    """
     kernel = create_kernel(X, kernel_type)
     m = GPy.models.GPRegression(X, y, kernel=kernel)
     m.optimize('bfgs')
@@ -73,13 +98,13 @@ def create_kernel(X, kernel_class):
 def create_sparse_gp(X, y, num_inducing=None, Z=None, plot=True, fix_inducing_inputs=False, fix_variance=False,
                      fix_lengthscale=False, kernel_type=DEFAULT_KERNEL):
     """
-
+    Create sparse Gaussian Process using the method of Titsias, 2009
     :param kernel_type: class of kernel
-    :param X:
-    :param y:
-    :param num_inducing:
-    :param Z:
-    :param plot:
+    :param X: inputs
+    :param y: noisy function values at inputs
+    :param num_inducing: number of inducing variables
+    :param Z: inducing variables locations
+    :param plot: whether to plot the posterior
     :param fix_inducing_inputs:
     :param fix_variance:
     :param fix_lengthscale:
@@ -113,6 +138,13 @@ def create_sparse_gp(X, y, num_inducing=None, Z=None, plot=True, fix_inducing_in
 
 
 def diff_marginal_likelihoods(variational_gp, full_gp, log: bool):
+    """
+    Calculate difference between true marginal likelihood and variational distribution.
+    :param variational_gp:
+    :param full_gp:
+    :param log:
+    :return:
+    """
     log_likelihood_variational = variational_gp.log_likelihood()[0][0]
     log_likelihood_true = full_gp.log_likelihood()
 
@@ -125,6 +157,13 @@ def diff_marginal_likelihoods(variational_gp, full_gp, log: bool):
 
 
 def fit_svm(X, y, plot):
+    """
+    Fit an SVM
+    :param X:
+    :param y:
+    :param plot: whether to plot output
+    :return:
+    """
     clf = SVR(C=1.0, epsilon=0.2)
     clf.fit(X, y.flatten())
     z = clf.predict(X)
