@@ -1,4 +1,5 @@
 # The following notebook was used as the starting point: https://github.com/SheffieldML/notebook/blob/master/GPy/sparse_gp_regression.ipynb
+import argparse
 
 import GPy
 import numpy as np
@@ -11,6 +12,7 @@ np.random.seed(101)
 N = 50
 SIMULATION_NOISE_VAR = 0.05
 DEFAULT_KERNEL = GPy.kern.RBF
+RBF = 'rbf'
 
 
 def simulate_data(k=GPy.kern.RBF(1)):
@@ -135,15 +137,25 @@ def fit_svm(X, y, plot):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--num_inducing', type=int, default=6)
+    parser.add_argument('--kernel', type=str, default=RBF)
+
+    args = parser.parse_args()
+    num_inducing = args.num_inducing
+    if args.kernel == RBF:
+        kernel_class = GPy.kern.RBF
+    else:
+        raise ValueError("Unknown kernel")
+
     # Sample function
     X, y = simulate_data()
 
-    kernel_class = GPy.kern.RBF
 
     # Create GPs
     m_full = create_full_gp(X, y, kernel_type=kernel_class)
     # Z = np.hstack((np.linspace(2.5,4.,3),np.linspace(7,8.5,3)))[:,None]
-    m_sparse = create_sparse_gp(X, y, num_inducing=6, kernel_type=kernel_class)
+    m_sparse = create_sparse_gp(X, y, num_inducing=num_inducing, kernel_type=kernel_class)
 
     # KL divergence
     # samples = X = np.linspace(0,10,1000)[:,None]
