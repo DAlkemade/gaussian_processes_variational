@@ -1,4 +1,3 @@
-import numpy as np
 import matplotlib.pyplot as plt
 
 from main import simulate_data, create_full_gp, create_sparse_gp, diff_marginal_likelihoods, KL_divergence
