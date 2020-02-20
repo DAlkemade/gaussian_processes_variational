@@ -9,7 +9,7 @@ from sklearn.svm import SVR
 np.random.seed(101)
 
 N = 50
-NOISE_VAR = 0.05
+SIMULATION_NOISE_VAR = 0.05
 
 
 def simulate_data(k=GPy.kern.RBF(1)):
@@ -18,7 +18,7 @@ def simulate_data(k=GPy.kern.RBF(1)):
     :return:
     """
     X = np.linspace(0, 10, 50)[:, None]
-    y = np.random.multivariate_normal(np.zeros(N), k.K(X) + np.eye(N) * np.sqrt(NOISE_VAR)).reshape(-1, 1)
+    y = np.random.multivariate_normal(np.zeros(N), k.K(X) + np.eye(N) * np.sqrt(SIMULATION_NOISE_VAR)).reshape(-1, 1)
     return X, y
 
 
@@ -94,6 +94,18 @@ def diff_marginal_likelihoods(variational_gp, full_gp, log: bool):
         return likelihood_true - likelihood_variational
 
 
+def fit_svm(X, y, plot):
+    clf = SVR(C=1.0, epsilon=0.2)
+    clf.fit(X, y.flatten())
+    z = clf.predict(X)
+    if plot:
+        plt.plot(X, z)
+        plt.scatter(X, y)
+        plt.title("SVM")
+        plt.show()
+    return clf
+
+
 if __name__ == "__main__":
     # Sample function
     X, y = simulate_data()
@@ -117,10 +129,4 @@ if __name__ == "__main__":
     plot_covariance_matrix(m_sparse.posterior.covariance)
 
     # Test SVM
-    clf = SVR(C=1.0, epsilon=0.2)
-    clf.fit(X, y.flatten())
-    z = clf.predict(X)
-    plt.plot(X, z)
-    plt.scatter(X, y)
-    plt.title("SVM")
-    plt.show()
+    fit_svm(X, y, plot=True)
