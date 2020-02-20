@@ -10,6 +10,7 @@ np.random.seed(101)
 
 N = 50
 SIMULATION_NOISE_VAR = 0.05
+DEFAULT_KERNEL = GPy.kern.RBF
 
 
 def simulate_data(k=GPy.kern.RBF(1)):
@@ -43,8 +44,9 @@ def KL_divergence(model_1, model_2, samples):
     return posterior_1.KL(posterior_2)
 
 
-def create_full_gp(X, y, plot=True):
-    m = GPy.models.GPRegression(X, y)
+def create_full_gp(X, y, kernel_type=DEFAULT_KERNEL, plot=True):
+    kernel = create_kernel(X, kernel_type)
+    m = GPy.models.GPRegression(X, y, kernel=kernel)
     m.optimize('bfgs')
     if plot:
         m.plot()
@@ -54,16 +56,42 @@ def create_full_gp(X, y, plot=True):
     return m
 
 
+def create_kernel(X, kernel_class):
+    """
+    Return kernel of given type with correct dimensions
+    :param X:
+    :param kernel_class:
+    :return:
+    """
+    input_dim = X.shape[1]
+    kernel = kernel_class(input_dim)
+    return kernel
+
+
 def create_sparse_gp(X, y, num_inducing=None, Z=None, plot=True, fix_inducing_inputs=False, fix_variance=False,
-                     fix_lengthscale=False):
+                     fix_lengthscale=False, kernel_type=DEFAULT_KERNEL):
+    """
+
+    :param kernel_type: class of kernel
+    :param X:
+    :param y:
+    :param num_inducing:
+    :param Z:
+    :param plot:
+    :param fix_inducing_inputs:
+    :param fix_variance:
+    :param fix_lengthscale:
+    :return:
+    """
     if num_inducing is None and Z is None:
         raise ValueError("Neither num_inducing or Z was defined")
 
-    if Z is not None:
-        m = GPy.models.SparseGPRegression(X, y, Z=Z)
-    else:
-        m = GPy.models.SparseGPRegression(X, y, num_inducing=num_inducing)
+    kernel = create_kernel(X, kernel_type)
 
+    if Z is not None:
+        m = GPy.models.SparseGPRegression(X, y, Z=Z, kernel=kernel)
+    else:
+        m = GPy.models.SparseGPRegression(X, y, num_inducing=num_inducing, kernel=kernel)
     # m.likelihood.variance = NOISE_VAR
     m.Z.unconstrain()
     if fix_inducing_inputs:
@@ -110,10 +138,12 @@ if __name__ == "__main__":
     # Sample function
     X, y = simulate_data()
 
+    kernel_class = GPy.kern.RBF
+
     # Create GPs
-    m_full = create_full_gp(X, y)
+    m_full = create_full_gp(X, y, kernel_type=kernel_class)
     # Z = np.hstack((np.linspace(2.5,4.,3),np.linspace(7,8.5,3)))[:,None]
-    m_sparse = create_sparse_gp(X, y, num_inducing=6)
+    m_sparse = create_sparse_gp(X, y, num_inducing=6, kernel_type=kernel_class)
 
     # KL divergence
     # samples = X = np.linspace(0,10,1000)[:,None]
