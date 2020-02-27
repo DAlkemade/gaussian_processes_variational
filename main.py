@@ -1,5 +1,7 @@
 # The following notebook was used as the starting point: https://github.com/SheffieldML/notebook/blob/master/GPy/sparse_gp_regression.ipynb
+from argparse import ArgumentParser
 
+import os
 import GPy
 import numpy as np
 import matplotlib.pyplot as plt
@@ -131,10 +133,12 @@ def evaluate_sparse_gp(data: Data, num_inducing, kernel_type=GPy.kern.RBF, plot_
 
 
 if __name__ == "__main__":
+    parser = ArgumentParser()
+    parser.add_argument('--config', type=str, default='linear_high_dim_creates_warnings.ini')
+    args = parser.parse_args()
 
     config = configparser.ConfigParser()
-    config.read('configs/linear_high_dim_creates_warnings.ini')
-    # config.read('configs/simple_linear.ini')
+    config.read(os.path.join('configs', args.config))
 
     input_dim = config['DATA'].getint('input_dim')
     n_samples = config['DATA'].getint('n')
