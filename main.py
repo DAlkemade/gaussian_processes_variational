@@ -6,9 +6,9 @@ import matplotlib.pyplot as plt
 from sklearn.datasets import make_regression, make_friedman1, make_friedman2, make_friedman3
 import configparser
 
-from compare import diff_marginal_likelihoods
+from compare import diff_marginal_likelihoods, find_mse
 from non_gp_alternatives import fit_svm, linear_regression
-from simulation import simulate_data_sklearn, simulate_data
+from simulation import simulate_data_sklearn, simulate_data, Data
 
 np.random.seed(101)
 
@@ -104,10 +104,11 @@ def create_sparse_gp(X, y, num_inducing=None, Z=None, plot=False, fix_inducing_i
     return m
 
 
-def evaluate_sparse_gp(X, y, num_inducing, kernel_type=GPy.kern.RBF, plot_figures=False):
+def evaluate_sparse_gp(data: Data, num_inducing, kernel_type=GPy.kern.RBF, plot_figures=False):
     # Create GPs
-    m_full = create_full_gp(X, y, kernel_type=kernel_type, plot=plot_figures)
-    m_sparse = create_sparse_gp(X, y, num_inducing=num_inducing, kernel_type=kernel_type, plot=plot_figures)
+    m_full = create_full_gp(data.X_train, data.y_train, kernel_type=kernel_type, plot=plot_figures)
+    m_sparse = create_sparse_gp(data.X_train, data.y_train, num_inducing=num_inducing, kernel_type=kernel_type,
+                                plot=plot_figures)
 
     print(f"diff log likelihoods: {diff_marginal_likelihoods(m_sparse, m_full, True)}")
     print(f"diff likelihoods: {diff_marginal_likelihoods(m_sparse, m_full, False)}")
@@ -115,11 +116,18 @@ def evaluate_sparse_gp(X, y, num_inducing, kernel_type=GPy.kern.RBF, plot_figure
     # Show covar of inducing inputs and of full gp
     plot_covariance_matrix(m_sparse.posterior.covariance)
 
+    if data.X_test is not None:
+        mse_test_sparse = find_mse(m_sparse, data.X_test, data.y_test)
+        mse_test_full = find_mse(m_full, data.X_test, data.y_test)
+
+        print(f'MSE test full: {mse_test_full}; MSE test sparse: {mse_test_sparse}')
+
 
 if __name__ == "__main__":
 
     config = configparser.ConfigParser()
-    config.read('configs/simple_rbf.ini')
+    config.read('configs/linear_high_dim_creates_warnings.ini')
+    # config.read('configs/simple_linear.ini')
 
     input_dim = config['DATA'].getint('input_dim')
     n_samples = config['DATA'].getint('n')
@@ -135,20 +143,23 @@ if __name__ == "__main__":
 
     # Sample function
     if simulation_function_string == 'make_regression':
-        X, y = simulate_data_sklearn(make_regression, n_samples, n_features=input_dim, n_informative=input_dim)
+        n_informative = config['DATA'].getint('input_dim_informative')
+        if n_informative is None:
+            n_informative = input_dim
+        data = simulate_data_sklearn(make_regression, n_samples, n_features=input_dim, n_informative=n_informative)
     elif simulation_function_string == 'make_friedman1':
-        X, y = simulate_data_sklearn(make_friedman1, n_samples, n_features=input_dim)
+        data = simulate_data_sklearn(make_friedman1, n_samples, n_features=input_dim)
     elif simulation_function_string == 'make_friedman2':
-        X, y = simulate_data_sklearn(make_friedman2, n_samples)
+        data = simulate_data_sklearn(make_friedman2, n_samples)
     elif simulation_function_string == 'make_friedman3':
-        X, y = simulate_data_sklearn(make_friedman3, n_samples)
+        data = simulate_data_sklearn(make_friedman3, n_samples)
     elif simulation_function_string == 'rbf':
-        X, y = simulate_data(n_samples, input_dim)
+        data = simulate_data(n_samples, input_dim)
     else:
         raise ValueError("Unknown simulation function given")
 
-    evaluate_sparse_gp(X, y, num_inducing, kernel_type=kernel_class, plot_figures=plot)
+    evaluate_sparse_gp(data, num_inducing, kernel_type=kernel_class, plot_figures=plot)
 
     # Test SVM
-    fit_svm(X, y, plot=plot)
-    linear_regression(X, y, plot=plot)
+    fit_svm(data.X_train, data.y_train, plot=plot)
+    linear_regression(data.X_train, data.y_train, plot=plot)

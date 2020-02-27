@@ -1,5 +1,7 @@
 import numpy as np
 from GPy.core.parameterization.variational import NormalPosterior
+from sklearn.metrics import mean_squared_error
+
 
 
 def KL_divergence(model_1, model_2, samples):
@@ -45,3 +47,8 @@ def create_posterior_object(m, samples):
     variances = covar.diagonal()
     variances = np.reshape(variances, (len(samples), 1))
     return NormalPosterior(means=mu, variances=variances)
+
+
+def find_mse(model, samples, y_true):
+    mu, covar = model.predict_noiseless(samples, full_cov=True)
+    return mean_squared_error(y_true, mu)

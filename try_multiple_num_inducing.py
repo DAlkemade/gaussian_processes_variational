@@ -7,7 +7,7 @@ from simulation import simulate_data
 USE_MARGINAL_LIKELIHOOD_DIFF = True
 
 if __name__ == "__main__":
-    X, y = simulate_data()
+    X, y = simulate_data(50, 1)
     m_full = create_full_gp(X, y, plot=False)
 
     results = []
