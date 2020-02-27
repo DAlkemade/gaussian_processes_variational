@@ -50,5 +50,12 @@ def create_posterior_object(m, samples):
 
 
 def find_mse(model, samples, y_true):
+    """
+    Find mean square error for a certain model on a certain set of inputs.
+    :param model: GP
+    :param samples: inputs
+    :param y_true: true outputs (including noise)
+    :return: Mean square error
+    """
     mu, covar = model.predict_noiseless(samples, full_cov=True)
     return mean_squared_error(y_true, mu)

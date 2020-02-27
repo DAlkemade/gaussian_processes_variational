@@ -14,6 +14,13 @@ class Data:
 
 
 def simulate_data_sklearn(function, n, **kwargs) -> Data:
+    """
+    Simulate linear data with noise using a sklearn dataset creation function.
+    :param function: make_regression, make_friedman1,2 or 3
+    :param n: number of samples for the training set and test set (each)
+    :param kwargs: parameters for the sklearn data creation function
+    :return: dataset
+    """
     X, y = function(n_samples=n * 2, noise=np.sqrt(SIMULATION_NOISE_VAR), **kwargs)
     y = y.reshape(-1, 1)
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)

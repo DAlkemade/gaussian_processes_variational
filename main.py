@@ -105,6 +105,13 @@ def create_sparse_gp(X, y, num_inducing=None, Z=None, plot=False, fix_inducing_i
 
 
 def evaluate_sparse_gp(data: Data, num_inducing, kernel_type=GPy.kern.RBF, plot_figures=False):
+    """
+    Create a sparse GP and compare it against a full GP.
+    :param data: contains training and test data
+    :param num_inducing: number of inducing points
+    :param kernel_type: type of kernel
+    :param plot_figures: whether to plot figures
+    """
     # Create GPs
     m_full = create_full_gp(data.X_train, data.y_train, kernel_type=kernel_type, plot=plot_figures)
     m_sparse = create_sparse_gp(data.X_train, data.y_train, num_inducing=num_inducing, kernel_type=kernel_type,
