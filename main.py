@@ -6,6 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from GPy.core.parameterization.variational import NormalPosterior
 from sklearn.svm import SVR
+from sklearn.linear_model import LinearRegression
 
 np.random.seed(101)
 
@@ -13,15 +14,21 @@ N = 50
 SIMULATION_NOISE_VAR = 0.05
 DEFAULT_KERNEL = GPy.kern.RBF
 RBF = 'rbf'
+GPy.plotting.change_plotting_library('matplotlib')
 
 
-def simulate_data(k=GPy.kern.RBF(1)):
+def simulate_data(k_class=GPy.kern.RBF, input_dim=1):
     """
     Simulate data using gaussian noise and a certain kernel
     :return:
     """
-    X = np.linspace(0, 10, 50)[:, None]
+    k = k_class(input_dim)
+    # X = np.linspace(0, 10, 50)[:, None]
+    X = np.reshape(np.linspace(0, 10, N*input_dim)[:, None], (N, input_dim))
+    # np.random.shuffle(X)
+    # y = np.random.multivariate_normal(np.zeros(N), np.eye(N) * np.sqrt(SIMULATION_NOISE_VAR)).reshape(-1, 1)
     y = np.random.multivariate_normal(np.zeros(N), k.K(X) + np.eye(N) * np.sqrt(SIMULATION_NOISE_VAR)).reshape(-1, 1)
+
     return X, y
 
 
@@ -63,7 +70,7 @@ def KL_divergence(model_1, model_2, samples):
     return posterior_1.KL(posterior_2)
 
 
-def create_full_gp(X, y, kernel_type=DEFAULT_KERNEL, plot=True):
+def create_full_gp(X, y, kernel_type=DEFAULT_KERNEL, plot=False):
     """
     Create non-sparse Gaussian Process.
     :param X: inputs
@@ -95,7 +102,7 @@ def create_kernel(X, kernel_class):
     return kernel
 
 
-def create_sparse_gp(X, y, num_inducing=None, Z=None, plot=True, fix_inducing_inputs=False, fix_variance=False,
+def create_sparse_gp(X, y, num_inducing=None, Z=None, plot=False, fix_inducing_inputs=False, fix_variance=False,
                      fix_lengthscale=False, kernel_type=DEFAULT_KERNEL):
     """
     Create sparse Gaussian Process using the method of Titsias, 2009
@@ -130,7 +137,8 @@ def create_sparse_gp(X, y, num_inducing=None, Z=None, plot=True, fix_inducing_in
 
     m.optimize('bfgs')
     if plot:
-        m.plot()
+        # m.plot()
+        m.plot(plot_limits=(-10, 30))
         plt.title("Sparse GP model")
         plt.show()
         print(m)
@@ -156,7 +164,7 @@ def diff_marginal_likelihoods(variational_gp, full_gp, log: bool):
         return likelihood_true - likelihood_variational
 
 
-def fit_svm(X, y, plot):
+def fit_svm(X, y, plot=True):
     """
     Fit an SVM
     :param X:
@@ -174,6 +182,19 @@ def fit_svm(X, y, plot):
         plt.show()
     return clf
 
+def linear_regression(X, y, plot=True):
+    clf = LinearRegression().fit(X, y)
+    z = clf.predict(X)
+    if plot:
+        plt.plot(X, z)
+        plt.scatter(X, y)
+        plt.title("Linear Regression")
+        plt.show()
+
+    # clf.predict_proba(X[:2, :])
+
+    # clf.score(X, y)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -188,20 +209,13 @@ if __name__ == "__main__":
         raise ValueError("Unknown kernel")
 
     # Sample function
-    X, y = simulate_data()
+    X, y = simulate_data(input_dim=1)
 
 
     # Create GPs
-    m_full = create_full_gp(X, y, kernel_type=kernel_class)
+    m_full = create_full_gp(X, y, kernel_type=kernel_class, plot=True)
     # Z = np.hstack((np.linspace(2.5,4.,3),np.linspace(7,8.5,3)))[:,None]
-    m_sparse = create_sparse_gp(X, y, num_inducing=num_inducing, kernel_type=kernel_class)
-
-    # KL divergence
-    # samples = X = np.linspace(0,10,1000)[:,None]
-    # samples = X
-    samples = m_sparse.Z
-    divergence = KL_divergence(m_sparse, m_full, samples)
-    print(f'KL divergence posteriors over inducing inputs {divergence}')
+    m_sparse = create_sparse_gp(X, y, num_inducing=num_inducing, kernel_type=kernel_class, plot=True)
 
     print(f"diff log likelihoods: {diff_marginal_likelihoods(m_sparse, m_full, True)}")
     print(f"diff likelihoods: {diff_marginal_likelihoods(m_sparse, m_full, False)}")
@@ -211,3 +225,4 @@ if __name__ == "__main__":
 
     # Test SVM
     fit_svm(X, y, plot=True)
+    linear_regression(X, y, plot=True)
