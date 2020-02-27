@@ -205,6 +205,19 @@ def linear_regression(X, y, plot=True):
     # clf.score(X, y)
 
 
+def evaluate_sparse_gp(X, y, num_inducing, kernel_type=GPy.kern.RBF, plot_figures=False):
+
+    # Create GPs
+    m_full = create_full_gp(X, y, kernel_type=kernel_type, plot=plot_figures)
+    m_sparse = create_sparse_gp(X, y, num_inducing=num_inducing, kernel_type=kernel_type, plot=plot_figures)
+
+    print(f"diff log likelihoods: {diff_marginal_likelihoods(m_sparse, m_full, True)}")
+    print(f"diff likelihoods: {diff_marginal_likelihoods(m_sparse, m_full, False)}")
+
+    # Show covar of inducing inputs and of full gp
+    plot_covariance_matrix(m_sparse.posterior.covariance)
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--num_inducing', type=int, default=6)
@@ -213,13 +226,12 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     print(f'Using args: {args}')
-    num_inducing = args.num_inducing
     if args.kernel == RBF:
         kernel_class = GPy.kern.RBF
     else:
         raise ValueError("Unknown kernel")
 
-    plot = INPUT_DIM <=1
+    plot = INPUT_DIM <= 1
 
     # Sample function
     simulation_function_string = args.simulation_function
@@ -234,16 +246,7 @@ if __name__ == "__main__":
     else:
         raise ValueError("Unknown simulation function given")
 
-    # Create GPs
-    m_full = create_full_gp(X, y, kernel_type=kernel_class, plot=plot)
-    # Z = np.hstack((np.linspace(2.5,4.,3),np.linspace(7,8.5,3)))[:,None]
-    m_sparse = create_sparse_gp(X, y, num_inducing=num_inducing, kernel_type=kernel_class, plot=plot)
-
-    print(f"diff log likelihoods: {diff_marginal_likelihoods(m_sparse, m_full, True)}")
-    print(f"diff likelihoods: {diff_marginal_likelihoods(m_sparse, m_full, False)}")
-
-    # Show covar of inducing inputs and of full gp
-    plot_covariance_matrix(m_sparse.posterior.covariance)
+    evaluate_sparse_gp(X, y, args.num_inducing, kernel_type=kernel_class, plot_figures=plot)
 
     # Test SVM
     fit_svm(X, y, plot=plot)
