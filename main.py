@@ -219,7 +219,7 @@ def evaluate_sparse_gp(X, y, num_inducing, kernel_type=GPy.kern.RBF, plot_figure
 if __name__ == "__main__":
 
     config = configparser.ConfigParser()
-    config.read('configs/simple.ini')
+    config.read('configs/simple_rbf.ini')
 
     input_dim = config['DATA'].getint('input_dim')
     n_samples = config['DATA'].getint('n')
@@ -242,6 +242,8 @@ if __name__ == "__main__":
         X, y = simulate_data_sklearn(make_friedman2, n_samples)
     elif simulation_function_string == 'make_friedman3':
         X, y = simulate_data_sklearn(make_friedman3, n_samples)
+    elif simulation_function_string == 'rbf':
+        X, y = simulate_data(n_samples, input_dim)
     else:
         raise ValueError("Unknown simulation function given")
 
