@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from GPy.core.parameterization.variational import NormalPosterior
 from sklearn.svm import SVR
 from sklearn.linear_model import LinearRegression
+from sklearn.datasets import make_regression
 
 np.random.seed(101)
 
@@ -17,6 +18,13 @@ RBF = 'rbf'
 GPy.plotting.change_plotting_library('matplotlib')
 
 
+def simulate_data_sklearn(**kwargs):
+    X, y = make_regression(**kwargs)
+    # X = X[:,None]
+    y = y.reshape(-1, 1)
+    return X, y
+
+
 def simulate_data(k_class=GPy.kern.RBF, input_dim=1):
     """
     Simulate data using gaussian noise and a certain kernel
@@ -24,7 +32,7 @@ def simulate_data(k_class=GPy.kern.RBF, input_dim=1):
     """
     k = k_class(input_dim)
     # X = np.linspace(0, 10, 50)[:, None]
-    X = np.reshape(np.linspace(0, 10, N*input_dim)[:, None], (N, input_dim))
+    X = np.reshape(np.linspace(0, 10, N * input_dim)[:, None], (N, input_dim))
     # np.random.shuffle(X)
     # y = np.random.multivariate_normal(np.zeros(N), np.eye(N) * np.sqrt(SIMULATION_NOISE_VAR)).reshape(-1, 1)
     y = np.random.multivariate_normal(np.zeros(N), k.K(X) + np.eye(N) * np.sqrt(SIMULATION_NOISE_VAR)).reshape(-1, 1)
@@ -182,6 +190,7 @@ def fit_svm(X, y, plot=True):
         plt.show()
     return clf
 
+
 def linear_regression(X, y, plot=True):
     clf = LinearRegression().fit(X, y)
     z = clf.predict(X)
@@ -209,8 +218,7 @@ if __name__ == "__main__":
         raise ValueError("Unknown kernel")
 
     # Sample function
-    X, y = simulate_data(input_dim=1)
-
+    X, y = simulate_data_sklearn(n_samples=N, n_features=1, n_informative=1)
 
     # Create GPs
     m_full = create_full_gp(X, y, kernel_type=kernel_class, plot=True)
