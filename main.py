@@ -8,34 +8,33 @@ from GPy.core.parameterization.variational import NormalPosterior
 from sklearn.svm import SVR
 from sklearn.linear_model import LinearRegression
 from sklearn.datasets import make_regression, make_friedman1, make_friedman2, make_friedman3
+import configparser
 
 np.random.seed(101)
 
-N = 50
 SIMULATION_NOISE_VAR = 0.05
 DEFAULT_KERNEL = GPy.kern.RBF
 RBF = 'rbf'
 GPy.plotting.change_plotting_library('matplotlib')
-INPUT_DIM = 5
 
 
-def simulate_data_sklearn(function, **kwargs):
-    X, y = function(n_samples=N, noise=np.sqrt(SIMULATION_NOISE_VAR), **kwargs)
+def simulate_data_sklearn(function, n, **kwargs):
+    X, y = function(n_samples=n, noise=np.sqrt(SIMULATION_NOISE_VAR), **kwargs)
     y = y.reshape(-1, 1)
     return X, y
 
 
-def simulate_data(k_class=GPy.kern.RBF, input_dim=INPUT_DIM):
+def simulate_data(n, input_dim, k_class=GPy.kern.RBF):
     """
     Simulate data using gaussian noise and a certain kernel
     :return:
     """
     k = k_class(input_dim)
     # X = np.linspace(0, 10, 50)[:, None]
-    X = np.reshape(np.linspace(0, 10, N * input_dim)[:, None], (N, input_dim))
+    X = np.reshape(np.linspace(0, 10, n * input_dim)[:, None], (n, input_dim))
     # np.random.shuffle(X)
     # y = np.random.multivariate_normal(np.zeros(N), np.eye(N) * np.sqrt(SIMULATION_NOISE_VAR)).reshape(-1, 1)
-    y = np.random.multivariate_normal(np.zeros(N), k.K(X) + np.eye(N) * np.sqrt(SIMULATION_NOISE_VAR)).reshape(-1, 1)
+    y = np.random.multivariate_normal(np.zeros(n), k.K(X) + np.eye(n) * np.sqrt(SIMULATION_NOISE_VAR)).reshape(-1, 1)
 
     return X, y
 
@@ -206,7 +205,6 @@ def linear_regression(X, y, plot=True):
 
 
 def evaluate_sparse_gp(X, y, num_inducing, kernel_type=GPy.kern.RBF, plot_figures=False):
-
     # Create GPs
     m_full = create_full_gp(X, y, kernel_type=kernel_type, plot=plot_figures)
     m_sparse = create_sparse_gp(X, y, num_inducing=num_inducing, kernel_type=kernel_type, plot=plot_figures)
@@ -219,34 +217,35 @@ def evaluate_sparse_gp(X, y, num_inducing, kernel_type=GPy.kern.RBF, plot_figure
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--num_inducing', type=int, default=6)
-    parser.add_argument('--kernel', type=str, default=RBF)
-    parser.add_argument('--simulation_function', type=str, default="make_regression")
 
-    args = parser.parse_args()
-    print(f'Using args: {args}')
-    if args.kernel == RBF:
+    config = configparser.ConfigParser()
+    config.read('configs/simple.ini')
+
+    input_dim = config['DATA'].getint('input_dim')
+    n_samples = config['DATA'].getint('n')
+    simulation_function_string = config['DATA']['simulation_function']
+    num_inducing = config['SPARSE_GP'].getint('num_inducing')
+
+    if config['GP']['kernel'] == RBF:
         kernel_class = GPy.kern.RBF
     else:
         raise ValueError("Unknown kernel")
 
-    plot = INPUT_DIM <= 1
+    plot = input_dim <= 1
 
     # Sample function
-    simulation_function_string = args.simulation_function
     if simulation_function_string == 'make_regression':
-        X, y = simulate_data_sklearn(make_regression, n_features=INPUT_DIM, n_informative=INPUT_DIM)
+        X, y = simulate_data_sklearn(make_regression, n_samples, n_features=input_dim, n_informative=input_dim)
     elif simulation_function_string == 'make_friedman1':
-        X, y = simulate_data_sklearn(make_friedman1, n_features=INPUT_DIM)
+        X, y = simulate_data_sklearn(make_friedman1, n_samples, n_features=input_dim)
     elif simulation_function_string == 'make_friedman2':
-        X, y = simulate_data_sklearn(make_friedman2)
+        X, y = simulate_data_sklearn(make_friedman2, n_samples)
     elif simulation_function_string == 'make_friedman3':
-        X, y = simulate_data_sklearn(make_friedman3)
+        X, y = simulate_data_sklearn(make_friedman3, n_samples)
     else:
         raise ValueError("Unknown simulation function given")
 
-    evaluate_sparse_gp(X, y, args.num_inducing, kernel_type=kernel_class, plot_figures=plot)
+    evaluate_sparse_gp(X, y, num_inducing, kernel_type=kernel_class, plot_figures=plot)
 
     # Test SVM
     fit_svm(X, y, plot=plot)
