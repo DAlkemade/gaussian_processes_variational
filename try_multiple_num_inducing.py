@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 
-from main import simulate_data, create_full_gp, create_sparse_gp, diff_marginal_likelihoods, KL_divergence
+from main import create_full_gp, create_sparse_gp
+from compare_gps import KL_divergence, diff_marginal_likelihoods
+from simulation import simulate_data
 
 USE_MARGINAL_LIKELIHOOD_DIFF = True
 

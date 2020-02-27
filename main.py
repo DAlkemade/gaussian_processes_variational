@@ -1,14 +1,15 @@
 # The following notebook was used as the starting point: https://github.com/SheffieldML/notebook/blob/master/GPy/sparse_gp_regression.ipynb
-import argparse
 
 import GPy
 import numpy as np
 import matplotlib.pyplot as plt
 from GPy.core.parameterization.variational import NormalPosterior
-from sklearn.svm import SVR
-from sklearn.linear_model import LinearRegression
 from sklearn.datasets import make_regression, make_friedman1, make_friedman2, make_friedman3
 import configparser
+
+from compare_gps import diff_marginal_likelihoods
+from non_gp_alternatives import fit_svm, linear_regression
+from simulation import simulate_data_sklearn, simulate_data
 
 np.random.seed(101)
 
@@ -16,27 +17,6 @@ SIMULATION_NOISE_VAR = 0.05
 DEFAULT_KERNEL = GPy.kern.RBF
 RBF = 'rbf'
 GPy.plotting.change_plotting_library('matplotlib')
-
-
-def simulate_data_sklearn(function, n, **kwargs):
-    X, y = function(n_samples=n, noise=np.sqrt(SIMULATION_NOISE_VAR), **kwargs)
-    y = y.reshape(-1, 1)
-    return X, y
-
-
-def simulate_data(n, input_dim, k_class=GPy.kern.RBF):
-    """
-    Simulate data using gaussian noise and a certain kernel
-    :return:
-    """
-    k = k_class(input_dim)
-    # X = np.linspace(0, 10, 50)[:, None]
-    X = np.reshape(np.linspace(0, 10, n * input_dim)[:, None], (n, input_dim))
-    # np.random.shuffle(X)
-    # y = np.random.multivariate_normal(np.zeros(N), np.eye(N) * np.sqrt(SIMULATION_NOISE_VAR)).reshape(-1, 1)
-    y = np.random.multivariate_normal(np.zeros(n), k.K(X) + np.eye(n) * np.sqrt(SIMULATION_NOISE_VAR)).reshape(-1, 1)
-
-    return X, y
 
 
 def plot_covariance_matrix(cov_matrix):
@@ -62,19 +42,6 @@ def create_posterior_object(m, samples):
     variances = covar.diagonal()
     variances = np.reshape(variances, (len(samples), 1))
     return NormalPosterior(means=mu, variances=variances)
-
-
-def KL_divergence(model_1, model_2, samples):
-    """
-    Determine KL divergence between the posteriors of two GPs
-    :param model_1:
-    :param model_2:
-    :param samples: function inputs over which the posteriors are created
-    :return:
-    """
-    posterior_1 = create_posterior_object(model_1, samples)
-    posterior_2 = create_posterior_object(model_2, samples)
-    return posterior_1.KL(posterior_2)
 
 
 def create_full_gp(X, y, kernel_type=DEFAULT_KERNEL, plot=False):
@@ -150,58 +117,6 @@ def create_sparse_gp(X, y, num_inducing=None, Z=None, plot=False, fix_inducing_i
         plt.show()
         print(m)
     return m
-
-
-def diff_marginal_likelihoods(variational_gp, full_gp, log: bool):
-    """
-    Calculate difference between true marginal likelihood and variational distribution.
-    :param variational_gp:
-    :param full_gp:
-    :param log:
-    :return:
-    """
-    log_likelihood_variational = variational_gp.log_likelihood()[0][0]
-    log_likelihood_true = full_gp.log_likelihood()
-
-    if log:
-        return log_likelihood_true - log_likelihood_variational
-    else:
-        likelihood_variational = 2 ** log_likelihood_variational
-        likelihood_true = 2 ** log_likelihood_true
-        return likelihood_true - likelihood_variational
-
-
-def fit_svm(X, y, plot=True):
-    """
-    Fit an SVM
-    :param X:
-    :param y:
-    :param plot: whether to plot output
-    :return:
-    """
-    clf = SVR(C=1.0, epsilon=0.2)
-    clf.fit(X, y.flatten())
-    z = clf.predict(X)
-    if plot:
-        plt.plot(X, z)
-        plt.scatter(X, y)
-        plt.title("SVM")
-        plt.show()
-    return clf
-
-
-def linear_regression(X, y, plot=True):
-    clf = LinearRegression().fit(X, y)
-    z = clf.predict(X)
-    if plot:
-        plt.plot(X, z)
-        plt.scatter(X, y)
-        plt.title("Linear Regression")
-        plt.show()
-
-    # clf.predict_proba(X[:2, :])
-
-    # clf.score(X, y)
 
 
 def evaluate_sparse_gp(X, y, num_inducing, kernel_type=GPy.kern.RBF, plot_figures=False):
