@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from GPy.core.parameterization.variational import NormalPosterior
 from sklearn.svm import SVR
 from sklearn.linear_model import LinearRegression
-from sklearn.datasets import make_regression
+from sklearn.datasets import make_regression, make_friedman1, make_friedman2, make_friedman3
 
 np.random.seed(101)
 
@@ -16,16 +16,16 @@ SIMULATION_NOISE_VAR = 0.05
 DEFAULT_KERNEL = GPy.kern.RBF
 RBF = 'rbf'
 GPy.plotting.change_plotting_library('matplotlib')
+INPUT_DIM = 5
 
 
-def simulate_data_sklearn(**kwargs):
-    X, y = make_regression(**kwargs)
-    # X = X[:,None]
+def simulate_data_sklearn(function, **kwargs):
+    X, y = function(n_samples=N, noise=np.sqrt(SIMULATION_NOISE_VAR), **kwargs)
     y = y.reshape(-1, 1)
     return X, y
 
 
-def simulate_data(k_class=GPy.kern.RBF, input_dim=1):
+def simulate_data(k_class=GPy.kern.RBF, input_dim=INPUT_DIM):
     """
     Simulate data using gaussian noise and a certain kernel
     :return:
@@ -209,21 +209,35 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--num_inducing', type=int, default=6)
     parser.add_argument('--kernel', type=str, default=RBF)
+    parser.add_argument('--simulation_function', type=str, default="make_regression")
 
     args = parser.parse_args()
+    print(f'Using args: {args}')
     num_inducing = args.num_inducing
     if args.kernel == RBF:
         kernel_class = GPy.kern.RBF
     else:
         raise ValueError("Unknown kernel")
 
+    plot = INPUT_DIM <=1
+
     # Sample function
-    X, y = simulate_data_sklearn(n_samples=N, n_features=1, n_informative=1)
+    simulation_function_string = args.simulation_function
+    if simulation_function_string == 'make_regression':
+        X, y = simulate_data_sklearn(make_regression, n_features=INPUT_DIM, n_informative=INPUT_DIM)
+    elif simulation_function_string == 'make_friedman1':
+        X, y = simulate_data_sklearn(make_friedman1, n_features=INPUT_DIM)
+    elif simulation_function_string == 'make_friedman2':
+        X, y = simulate_data_sklearn(make_friedman2)
+    elif simulation_function_string == 'make_friedman3':
+        X, y = simulate_data_sklearn(make_friedman3)
+    else:
+        raise ValueError("Unknown simulation function given")
 
     # Create GPs
-    m_full = create_full_gp(X, y, kernel_type=kernel_class, plot=True)
+    m_full = create_full_gp(X, y, kernel_type=kernel_class, plot=plot)
     # Z = np.hstack((np.linspace(2.5,4.,3),np.linspace(7,8.5,3)))[:,None]
-    m_sparse = create_sparse_gp(X, y, num_inducing=num_inducing, kernel_type=kernel_class, plot=True)
+    m_sparse = create_sparse_gp(X, y, num_inducing=num_inducing, kernel_type=kernel_class, plot=plot)
 
     print(f"diff log likelihoods: {diff_marginal_likelihoods(m_sparse, m_full, True)}")
     print(f"diff likelihoods: {diff_marginal_likelihoods(m_sparse, m_full, False)}")
@@ -232,5 +246,5 @@ if __name__ == "__main__":
     plot_covariance_matrix(m_sparse.posterior.covariance)
 
     # Test SVM
-    fit_svm(X, y, plot=True)
-    linear_regression(X, y, plot=True)
+    fit_svm(X, y, plot=plot)
+    linear_regression(X, y, plot=plot)
