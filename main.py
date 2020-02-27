@@ -3,17 +3,15 @@
 import GPy
 import numpy as np
 import matplotlib.pyplot as plt
-from GPy.core.parameterization.variational import NormalPosterior
 from sklearn.datasets import make_regression, make_friedman1, make_friedman2, make_friedman3
 import configparser
 
-from compare_gps import diff_marginal_likelihoods
+from compare import diff_marginal_likelihoods
 from non_gp_alternatives import fit_svm, linear_regression
 from simulation import simulate_data_sklearn, simulate_data
 
 np.random.seed(101)
 
-SIMULATION_NOISE_VAR = 0.05
 DEFAULT_KERNEL = GPy.kern.RBF
 RBF = 'rbf'
 GPy.plotting.change_plotting_library('matplotlib')
@@ -29,19 +27,6 @@ def plot_covariance_matrix(cov_matrix):
     fig.colorbar(im)
     plt.title("Covariance matrix")
     plt.show()
-
-
-def create_posterior_object(m, samples):
-    """
-    Create a NormalPosterior object.
-    :param m: GP with which to create posterior
-    :param samples: function inputs to create the posterior at
-    :return:
-    """
-    mu, covar = m.predict_noiseless(samples, full_cov=True)
-    variances = covar.diagonal()
-    variances = np.reshape(variances, (len(samples), 1))
-    return NormalPosterior(means=mu, variances=variances)
 
 
 def create_full_gp(X, y, kernel_type=DEFAULT_KERNEL, plot=False):

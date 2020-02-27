@@ -1,7 +1,7 @@
 import GPy
 import numpy as np
 
-from main import SIMULATION_NOISE_VAR
+SIMULATION_NOISE_VAR = 0.05
 
 
 def simulate_data_sklearn(function, n, **kwargs):

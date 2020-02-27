@@ -1,4 +1,5 @@
-from main import create_posterior_object
+import numpy as np
+from GPy.core.parameterization.variational import NormalPosterior
 
 
 def KL_divergence(model_1, model_2, samples):
@@ -31,3 +32,16 @@ def diff_marginal_likelihoods(variational_gp, full_gp, log: bool):
         likelihood_variational = 2 ** log_likelihood_variational
         likelihood_true = 2 ** log_likelihood_true
         return likelihood_true - likelihood_variational
+
+
+def create_posterior_object(m, samples):
+    """
+    Create a NormalPosterior object.
+    :param m: GP with which to create posterior
+    :param samples: function inputs to create the posterior at
+    :return:
+    """
+    mu, covar = m.predict_noiseless(samples, full_cov=True)
+    variances = covar.diagonal()
+    variances = np.reshape(variances, (len(samples), 1))
+    return NormalPosterior(means=mu, variances=variances)
