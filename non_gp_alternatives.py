@@ -4,13 +4,7 @@ from sklearn.svm import SVR
 
 
 def fit_svm(X, y, plot=True):
-    """
-    Fit an SVM
-    :param X:
-    :param y:
-    :param plot: whether to plot output
-    :return:
-    """
+    """Fit an SVM."""
     clf = SVR(C=1.0, epsilon=0.2)
     clf.fit(X, y.flatten())
     z = clf.predict(X)
@@ -23,6 +17,7 @@ def fit_svm(X, y, plot=True):
 
 
 def linear_regression(X, y, plot=True):
+    """Fit a linear regression model."""
     clf = LinearRegression().fit(X, y)
     z = clf.predict(X)
     if plot:
@@ -30,7 +25,3 @@ def linear_regression(X, y, plot=True):
         plt.scatter(X, y)
         plt.title("Linear Regression")
         plt.show()
-
-    # clf.predict_proba(X[:2, :])
-
-    # clf.score(X, y)

@@ -5,8 +5,8 @@ from sklearn.metrics import mean_squared_error
 
 
 def KL_divergence(model_1, model_2, samples):
-    """
-    Determine KL divergence between the posteriors of two GPs
+    """Determine KL divergence between the posteriors of two GPs
+
     :param model_1:
     :param model_2:
     :param samples: function inputs over which the posteriors are created
@@ -18,13 +18,7 @@ def KL_divergence(model_1, model_2, samples):
 
 
 def diff_marginal_likelihoods(variational_gp, full_gp, log: bool):
-    """
-    Calculate difference between true marginal likelihood and variational distribution.
-    :param variational_gp:
-    :param full_gp:
-    :param log:
-    :return:
-    """
+    """Calculate difference between true marginal likelihood and variational distribution."""
     log_likelihood_variational = variational_gp.log_likelihood()[0][0]
     log_likelihood_true = full_gp.log_likelihood()
 
@@ -37,8 +31,8 @@ def diff_marginal_likelihoods(variational_gp, full_gp, log: bool):
 
 
 def create_posterior_object(m, samples):
-    """
-    Create a NormalPosterior object.
+    """Create a NormalPosterior object.
+
     :param m: GP with which to create posterior
     :param samples: function inputs to create the posterior at
     :return:
@@ -50,8 +44,8 @@ def create_posterior_object(m, samples):
 
 
 def find_mse(model, samples, y_true):
-    """
-    Find mean square error for a certain model on a certain set of inputs.
+    """Find mean square error for a certain model on a certain set of inputs.
+
     :param model: GP
     :param samples: inputs
     :param y_true: true outputs (including noise)

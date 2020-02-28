@@ -20,8 +20,8 @@ GPy.plotting.change_plotting_library('matplotlib')
 
 
 def plot_covariance_matrix(cov_matrix):
-    """
-    Plot covariance matrix.
+    """Plot covariance matrix.
+
     :param cov_matrix: covariance matrix to be plotted
     """
     fig, ax = plt.subplots(figsize=(8, 8))
@@ -32,8 +32,8 @@ def plot_covariance_matrix(cov_matrix):
 
 
 def create_full_gp(X, y, kernel_type=DEFAULT_KERNEL, plot=False):
-    """
-    Create non-sparse Gaussian Process.
+    """Create non-sparse Gaussian Process.
+
     :param X: inputs
     :param y: noisy function values at inputs
     :param kernel_type: class of kernel
@@ -52,8 +52,8 @@ def create_full_gp(X, y, kernel_type=DEFAULT_KERNEL, plot=False):
 
 
 def create_kernel(X, kernel_class):
-    """
-    Return kernel of given type with correct dimensions
+    """Return kernel of given type with correct dimensions.
+
     :param X:
     :param kernel_class:
     :return:
@@ -65,8 +65,8 @@ def create_kernel(X, kernel_class):
 
 def create_sparse_gp(X, y, num_inducing=None, Z=None, plot=False, fix_inducing_inputs=False, fix_variance=False,
                      fix_lengthscale=False, kernel_type=DEFAULT_KERNEL):
-    """
-    Create sparse Gaussian Process using the method of Titsias, 2009
+    """Create sparse Gaussian Process using the method of Titsias, 2009
+
     :param kernel_type: class of kernel
     :param X: inputs
     :param y: noisy function values at inputs
@@ -107,8 +107,8 @@ def create_sparse_gp(X, y, num_inducing=None, Z=None, plot=False, fix_inducing_i
 
 
 def evaluate_sparse_gp(data: Data, num_inducing, kernel_type=GPy.kern.RBF, plot_figures=False):
-    """
-    Create a sparse GP and compare it against a full GP.
+    """Create a sparse GP and compare it against a full GP.
+
     :param data: contains training and test data
     :param num_inducing: number of inducing points
     :param kernel_type: type of kernel
@@ -132,26 +132,22 @@ def evaluate_sparse_gp(data: Data, num_inducing, kernel_type=GPy.kern.RBF, plot_
         print(f'MSE test full: {mse_test_full}; MSE test sparse: {mse_test_sparse}')
 
 
-if __name__ == "__main__":
+def main():
+    """Run the experiment using a certain config defined in the config file."""
     parser = ArgumentParser()
     parser.add_argument('--config', type=str, default='linear_high_dim_creates_warnings.ini')
     args = parser.parse_args()
-
     config = configparser.ConfigParser()
     config.read(os.path.join('configs', args.config))
-
     input_dim = config['DATA'].getint('input_dim')
     n_samples = config['DATA'].getint('n')
     simulation_function_string = config['DATA']['simulation_function']
     num_inducing = config['SPARSE_GP'].getint('num_inducing')
-
     if config['GP']['kernel'] == RBF:
         kernel_class = GPy.kern.RBF
     else:
         raise ValueError("Unknown kernel")
-
     plot = input_dim <= 1
-
     # Sample function
     if simulation_function_string == 'make_regression':
         n_informative = config['DATA'].getint('input_dim_informative')
@@ -168,9 +164,11 @@ if __name__ == "__main__":
         data = simulate_data(n_samples, input_dim)
     else:
         raise ValueError("Unknown simulation function given")
-
     evaluate_sparse_gp(data, num_inducing, kernel_type=kernel_class, plot_figures=plot)
-
     # Test SVM
     fit_svm(data.X_train, data.y_train, plot=plot)
     linear_regression(data.X_train, data.y_train, plot=plot)
+
+
+if __name__ == "__main__":
+    main()

@@ -5,7 +5,8 @@ from sklearn.model_selection import train_test_split
 
 SIMULATION_NOISE_VAR = 0.05
 
-class Data:
+
+class Data(object):
     def __init__(self, X_train, X_test, y_train, y_test):
         self.y_test = y_test
         self.y_train = y_train
@@ -14,8 +15,7 @@ class Data:
 
 
 def simulate_data_sklearn(function, n, **kwargs) -> Data:
-    """
-    Simulate linear data with noise using a sklearn dataset creation function.
+    """Simulate linear data with noise using a sklearn dataset creation function.
     :param function: make_regression, make_friedman1,2 or 3
     :param n: number of samples for the training set and test set (each)
     :param kwargs: parameters for the sklearn data creation function
@@ -30,10 +30,7 @@ def simulate_data_sklearn(function, n, **kwargs) -> Data:
 
 
 def simulate_data(n, input_dim, k_class=GPy.kern.RBF) -> Data:
-    """
-    Simulate data using gaussian noise and a certain kernel
-    :return:
-    """
+    """Simulate data using gaussian noise and a certain kernel."""
     k = k_class(input_dim)
     # X = np.linspace(0, 10, 50)[:, None]
     X = np.reshape(np.linspace(0, 10, n * input_dim)[:, None], (n, input_dim))
