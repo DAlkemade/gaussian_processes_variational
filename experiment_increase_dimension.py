@@ -12,7 +12,7 @@ import numpy as np
 def main():
     """Run experiment with changing number of inducing variables."""
     n = 400
-    max_dim = 3
+    max_dim = 10
     max_num_inducing = 200
     dimensions = range(1, max_dim + 1)
     num_inducings = range(1, max_num_inducing + 1, 50)
@@ -37,7 +37,6 @@ def main():
             mse_full = find_mse(m_full, data.X_test, data.y_test)
             mse_sparse = find_mse(m_sparse, data.X_test, data.y_test)
             divergence = diff_marginal_likelihoods(m_sparse, m_full, True)
-            print(mse_full, mse_sparse)
             mses_full[i, j] = mse_full
             mses_sparse[i, j] = mse_sparse
             divergences[i, j] = divergence
@@ -57,7 +56,6 @@ def main():
     # plt.title("KL divergence w.r.t the number of inducing variables")
     plt.xlabel("Input dimension")
     plt.ylabel("Divergence")
-    plt.legend()
     plt.show()
 
     plt.plot(dimensions, mses_sparse[:, slice_idx], label='sparse')
