@@ -21,6 +21,7 @@ class Simulator(ABC):
 
     def __init__(self, n_samples):
         self.n_samples = n_samples
+        self.random_state = 42
 
     @property
     def _n_test_plus_train(self):
@@ -34,7 +35,7 @@ class Simulator(ABC):
     def simulate(self, n_features, **kwargs):
         X, y = self._simulate(n_features, **kwargs)
         y = y.reshape(-1, 1)
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=42)
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.5, random_state=self.random_state)
         return Data(X_train, X_test, y_train, y_test)
 
 
@@ -46,7 +47,7 @@ class FriedMan1Simulator(Simulator):
 
     def _simulate(self, n_features, **kwargs):
         return make_friedman1(n_samples=self._n_test_plus_train, noise=np.sqrt(SIMULATION_NOISE_VAR),
-                              n_features=n_features)
+                              n_features=n_features, random_state=self.random_state)
 
 
 class LinearSimulator(Simulator):
@@ -54,7 +55,7 @@ class LinearSimulator(Simulator):
 
     def _simulate(self, n_features, **kwargs):
         return make_regression(n_samples=self._n_test_plus_train, noise=np.sqrt(SIMULATION_NOISE_VAR),
-                               n_features=n_features, **kwargs)
+                               n_features=n_features, random_state=self.random_state, **kwargs)
 
 
 class RBFSimulator(Simulator):
@@ -64,7 +65,7 @@ class RBFSimulator(Simulator):
         k = GPy.kern.RBF(n_features)
         # X = np.linspace(0, 10, n)[:, None]
         X, _ = make_regression(n_samples=self._n_test_plus_train, noise=np.sqrt(SIMULATION_NOISE_VAR),
-                               n_features=n_features, **kwargs)
+                               n_features=n_features, random_state=self.random_state, **kwargs)
         X = 3 * X
         covariance = k.K(X) + np.eye(self._n_test_plus_train) * np.sqrt(SIMULATION_NOISE_VAR)
         y = np.random.multivariate_normal(np.zeros(self._n_test_plus_train), covariance).reshape(-1, 1)

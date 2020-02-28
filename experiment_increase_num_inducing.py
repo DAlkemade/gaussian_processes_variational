@@ -1,20 +1,23 @@
+import GPy
+
 import matplotlib.pyplot as plt
 
-from main import create_full_gp, create_sparse_gp
 from compare import KL_divergence, diff_marginal_likelihoods, find_mse
 import tqdm
-import sys
 
+from main import create_sparse_gp, create_full_gp
 from simulation import RBFSimulator, LinearSimulator, FriedMan1Simulator
 
 
 def main():
     """Run experiment with changing number of inducing variables."""
-    simulator = RBFSimulator(100)
-    data = simulator.simulate(3, n_informative=3)
+    simulator = RBFSimulator(500)
+    n_input = 5
+    data = simulator.simulate(n_input, n_informative=n_input)
     X, y = data.X_train, data.y_train
+    kernel_full = GPy.kern.RBF(n_input)
     try:
-        m_full = create_full_gp(X, y, plot=False)
+        m_full = create_full_gp(X, y, kernel_full, plot=False)
     except RuntimeWarning:
         print('Stopping programme, since we cannot rely on it if it has overflows')
         return
@@ -24,14 +27,14 @@ def main():
     valid_x_values = []
     n = len(X)
     # Increase the number of inducing inputs until n==m
-    inducing_inputs_nums = range(1, n + 1)
+    inducing_inputs_nums = range(1, n+1, 5)
     # Note that the runtime of a single iteration increases with num_inducing squared
     mses = []
-    print("Start experiment")
-    for i in tqdm.trange(len(inducing_inputs_nums)):
-        num = inducing_inputs_nums[i]
+    for i in tqdm.tqdm(inducing_inputs_nums):
+        num = i
         try:
-            m_sparse = create_sparse_gp(X, y, num_inducing=num, plot=False)
+            kernel_sparse = GPy.kern.RBF(n_input)
+            m_sparse = create_sparse_gp(X, y, kernel_sparse, plot=False, num_inducing=num)
         except Exception as error:
             print(f'Error {error} at num={num}')
             continue
@@ -60,6 +63,16 @@ def main():
     plt.ylabel("KL(p||q)")
     plt.show()
 
+    plt.plot(valid_x_values, mses, label='sparse')
+    plt.plot(valid_x_values, [mse_full] * len(valid_x_values), label='full')
+    # plt.title("KL divergence w.r.t the number of inducing variables")
+    plt.xlabel("Number of inducing variables")
+    plt.ylabel("MSE")
+    plt.legend()
+    plt.show()
+
+    valid_x_values = valid_x_values[1:]
+    mses = mses[1:]
     plt.plot(valid_x_values, mses, label='sparse')
     plt.plot(valid_x_values, [mse_full] * len(valid_x_values), label='full')
     # plt.title("KL divergence w.r.t the number of inducing variables")

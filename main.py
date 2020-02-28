@@ -13,7 +13,6 @@ from simulation import Data, LinearSimulator, FriedMan1Simulator, RBFSimulator
 
 np.random.seed(101)
 
-DEFAULT_KERNEL = GPy.kern.RBF
 RBF = 'rbf'
 GPy.plotting.change_plotting_library('matplotlib')
 
@@ -30,7 +29,7 @@ def plot_covariance_matrix(cov_matrix):
     plt.show()
 
 
-def create_full_gp(X, y, kernel_type=DEFAULT_KERNEL, plot=False):
+def create_full_gp(X, y, kernel, plot=False):
     """Create non-sparse Gaussian Process.
 
     :param X: inputs
@@ -39,7 +38,6 @@ def create_full_gp(X, y, kernel_type=DEFAULT_KERNEL, plot=False):
     :param plot: whether to plot the posterior
     :return:
     """
-    kernel = create_kernel(X, kernel_type)
     m = GPy.models.GPRegression(X, y, kernel=kernel)
     m.optimize('bfgs')
     if plot:
@@ -62,8 +60,8 @@ def create_kernel(X, kernel_class):
     return kernel
 
 
-def create_sparse_gp(X, y, num_inducing=None, Z=None, plot=False, fix_inducing_inputs=False, fix_variance=False,
-                     fix_lengthscale=False, kernel_type=DEFAULT_KERNEL):
+def create_sparse_gp(X, y, kernel, num_inducing, plot=False, fix_inducing_inputs=False, fix_variance=False,
+                     fix_lengthscale=False):
     """Create sparse Gaussian Process using the method of Titsias, 2009
 
     :param kernel_type: class of kernel
@@ -77,15 +75,9 @@ def create_sparse_gp(X, y, num_inducing=None, Z=None, plot=False, fix_inducing_i
     :param fix_lengthscale:
     :return:
     """
-    if num_inducing is None and Z is None:
-        raise ValueError("Neither num_inducing or Z was defined")
 
-    kernel = create_kernel(X, kernel_type)
+    m = GPy.models.SparseGPRegression(X, y, num_inducing=num_inducing, kernel=kernel)
 
-    if Z is not None:
-        m = GPy.models.SparseGPRegression(X, y, Z=Z, kernel=kernel)
-    else:
-        m = GPy.models.SparseGPRegression(X, y, num_inducing=num_inducing, kernel=kernel)
     # m.likelihood.variance = NOISE_VAR
     m.Z.unconstrain()
     if fix_inducing_inputs:
@@ -131,7 +123,7 @@ def evaluate_sparse_gp(X_test: np.array, y_test: np.array, m_sparse, m_full):
 def main():
     """Run the experiment using a certain config defined in the config file."""
     parser = ArgumentParser()
-    parser.add_argument('--config', type=str, default='linear_high_dim.ini')
+    parser.add_argument('--config', type=str, default='simple_linear.ini')
     args = parser.parse_args()
     config = configparser.ConfigParser()
     config.read(os.path.join('configs', args.config))
@@ -160,9 +152,10 @@ def main():
     else:
         raise ValueError("Unknown simulation function given")
 
-    m_full = create_full_gp(data.X_train, data.y_train, kernel_type=kernel_class, plot=plot)
-    m_sparse = create_sparse_gp(data.X_train, data.y_train, num_inducing=num_inducing, kernel_type=kernel_class,
-                                plot=plot)
+    kernel = create_kernel(data.X_train, kernel_class)
+
+    m_full = create_full_gp(data.X_train, data.y_train, kernel, plot=plot)
+    m_sparse = create_sparse_gp(data.X_train, data.y_train, kernel, num_inducing, plot=plot)
 
     evaluate_sparse_gp(data.X_test, data.y_test, m_sparse, m_full)
 
