@@ -1,16 +1,15 @@
 # The following notebook was used as the starting point: https://github.com/SheffieldML/notebook/blob/master/GPy/sparse_gp_regression.ipynb
+import configparser
+import os
 from argparse import ArgumentParser
 
-import os
 import GPy
-import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.datasets import make_regression, make_friedman1, make_friedman2, make_friedman3
-import configparser
+import numpy as np
 
 from compare import diff_marginal_likelihoods, find_mse
 from non_gp_alternatives import fit_svm, linear_regression
-from simulation import simulate_data_sklearn, simulate_data, Data
+from simulation import Data, LinearSimulator, FriedMan1Simulator, RBFSimulator
 
 np.random.seed(101)
 
@@ -135,7 +134,7 @@ def evaluate_sparse_gp(data: Data, num_inducing, kernel_type=GPy.kern.RBF, plot_
 def main():
     """Run the experiment using a certain config defined in the config file."""
     parser = ArgumentParser()
-    parser.add_argument('--config', type=str, default='linear_high_dim_creates_warnings.ini')
+    parser.add_argument('--config', type=str, default='simple_linear.ini')
     args = parser.parse_args()
     config = configparser.ConfigParser()
     config.read(os.path.join('configs', args.config))
@@ -153,15 +152,14 @@ def main():
         n_informative = config['DATA'].getint('input_dim_informative')
         if n_informative is None:
             n_informative = input_dim
-        data = simulate_data_sklearn(make_regression, n_samples, n_features=input_dim, n_informative=n_informative)
+        simulator = LinearSimulator(n_samples)
+        data = simulator.simulate(input_dim, n_informative=n_informative)
     elif simulation_function_string == 'make_friedman1':
-        data = simulate_data_sklearn(make_friedman1, n_samples, n_features=input_dim)
-    elif simulation_function_string == 'make_friedman2':
-        data = simulate_data_sklearn(make_friedman2, n_samples)
-    elif simulation_function_string == 'make_friedman3':
-        data = simulate_data_sklearn(make_friedman3, n_samples)
+        simulator = FriedMan1Simulator(n_samples)
+        data = simulator.simulate(input_dim)
     elif simulation_function_string == 'rbf':
-        data = simulate_data(n_samples, input_dim)
+        simulator = RBFSimulator(n_samples)
+        data = simulator.simulate(input_dim)
     else:
         raise ValueError("Unknown simulation function given")
     evaluate_sparse_gp(data, num_inducing, kernel_type=kernel_class, plot_figures=plot)
