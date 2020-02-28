@@ -105,7 +105,7 @@ def create_sparse_gp(X, y, num_inducing=None, Z=None, plot=False, fix_inducing_i
     return m
 
 
-def evaluate_sparse_gp(data: Data, num_inducing, kernel_type=GPy.kern.RBF, plot_figures=False):
+def evaluate_sparse_gp(X_test: np.array, y_test: np.array, m_sparse, m_full):
     """Create a sparse GP and compare it against a full GP.
 
     :param data: contains training and test data
@@ -114,19 +114,16 @@ def evaluate_sparse_gp(data: Data, num_inducing, kernel_type=GPy.kern.RBF, plot_
     :param plot_figures: whether to plot figures
     """
     # Create GPs
-    m_full = create_full_gp(data.X_train, data.y_train, kernel_type=kernel_type, plot=plot_figures)
-    m_sparse = create_sparse_gp(data.X_train, data.y_train, num_inducing=num_inducing, kernel_type=kernel_type,
-                                plot=plot_figures)
 
-    print(f"diff log likelihoods: {diff_marginal_likelihoods(m_sparse, m_full, True)}")
-    print(f"diff likelihoods: {diff_marginal_likelihoods(m_sparse, m_full, False)}")
+    diff = diff_marginal_likelihoods(m_sparse, m_full, True)
+    print(f"diff log likelihoods: {diff}")
 
     # Show covar of inducing inputs and of full gp
     plot_covariance_matrix(m_sparse.posterior.covariance)
 
-    if data.X_test is not None:
-        mse_test_sparse = find_mse(m_sparse, data.X_test, data.y_test)
-        mse_test_full = find_mse(m_full, data.X_test, data.y_test)
+    if X_test is not None:
+        mse_test_sparse = find_mse(m_sparse, X_test, y_test)
+        mse_test_full = find_mse(m_full, X_test, y_test)
 
         print(f'MSE test full: {mse_test_full}; MSE test sparse: {mse_test_sparse}')
 
@@ -134,7 +131,7 @@ def evaluate_sparse_gp(data: Data, num_inducing, kernel_type=GPy.kern.RBF, plot_
 def main():
     """Run the experiment using a certain config defined in the config file."""
     parser = ArgumentParser()
-    parser.add_argument('--config', type=str, default='simple_linear.ini')
+    parser.add_argument('--config', type=str, default='linear_high_dim.ini')
     args = parser.parse_args()
     config = configparser.ConfigParser()
     config.read(os.path.join('configs', args.config))
@@ -162,7 +159,13 @@ def main():
         data = simulator.simulate(input_dim)
     else:
         raise ValueError("Unknown simulation function given")
-    evaluate_sparse_gp(data, num_inducing, kernel_type=kernel_class, plot_figures=plot)
+
+    m_full = create_full_gp(data.X_train, data.y_train, kernel_type=kernel_class, plot=plot)
+    m_sparse = create_sparse_gp(data.X_train, data.y_train, num_inducing=num_inducing, kernel_type=kernel_class,
+                                plot=plot)
+
+    evaluate_sparse_gp(data.X_test, data.y_test, m_sparse, m_full)
+
     # Test SVM
     fit_svm(data.X_train, data.y_train, plot=plot)
     linear_regression(data.X_train, data.y_train, plot=plot)
