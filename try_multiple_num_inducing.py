@@ -6,10 +6,11 @@ from simulation import simulate_data
 
 USE_MARGINAL_LIKELIHOOD_DIFF = True
 
-if __name__ == "__main__":
+
+def main():
+    """Run experiment with changing number of inducing variables."""
     X, y = simulate_data(50, 1)
     m_full = create_full_gp(X, y, plot=False)
-
     results = []
     n = len(X)
     # Increase the number of inducing inputs until n==m
@@ -22,10 +23,13 @@ if __name__ == "__main__":
             samples = X
             divergence = KL_divergence(m_sparse, m_full, samples)
         results.append(divergence)
-
     plt.plot(inducing_inputs_nums, results)
     plt.plot(inducing_inputs_nums, [0] * n)
     plt.title("KL divergence w.r.t the number of inducing variables")
     plt.xlabel("Number of inducing variables")
     plt.ylabel("KL(p||q)")
     plt.show()
+
+
+if __name__ == "__main__":
+    main()
