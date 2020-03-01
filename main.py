@@ -29,7 +29,7 @@ def plot_covariance_matrix(cov_matrix):
     plt.show()
 
 
-def create_full_gp(X, y, kernel, plot=False):
+def create_full_gp(X, y, kernel, optimizer = None, plot=False):
     """Create non-sparse Gaussian Process.
 
     :param X: inputs
@@ -39,7 +39,7 @@ def create_full_gp(X, y, kernel, plot=False):
     :return:
     """
     m = GPy.models.GPRegression(X, y, kernel=kernel)
-    m.optimize('bfgs')
+    m.optimize(optimizer)
     if plot:
         m.plot()
         plt.title("Full GP model")
