@@ -1,6 +1,8 @@
 import pickle
+from collections import namedtuple
 from typing import Type
 
+import os
 import GPy
 import numpy as np
 import tqdm
@@ -9,7 +11,7 @@ from GPy.kern import Kern
 from compare import diff_marginal_likelihoods, find_mse
 from evaluate_experiment_increase_dimension import plot_experiment_results, ExperimentResults
 from main import create_full_gp, create_sparse_gp
-from simulation import RBFSimulator
+from simulation import RBFSimulator, LinearSimulator, FriedMan1Simulator
 
 
 def calc_K_tilda(kernel: Type[Kern], X_train: np.array, X_m: np.array):
@@ -24,15 +26,25 @@ def calc_K_tilda(kernel: Type[Kern], X_train: np.array, X_m: np.array):
 
 
 def main():
+    Experiment = namedtuple('Experiment', ['tag', 'simulator', 'kernel', 'min_dim', 'max_dim'])
+    n = 51
+    experiments = [
+        Experiment('linear', LinearSimulator, GPy.kern.Linear, 1, 20),
+        Experiment('rbf', RBFSimulator, GPy.kern.RBF, 1, 20),
+        Experiment('friedman', FriedMan1Simulator, GPy.kern.RBF, 5, 20)
+    ]
+    for experiment in experiments:
+        run_single_experiment(experiment.tag, experiment.kernel, experiment.simulator, n, experiment.min_dim, experiment.max_dim)
+
+
+def run_single_experiment(tag: str, kernel_type, simulator_type, n: int, min_dim: int, max_dim: int):
     """Run experiment with changing number of inducing variables."""
-    gp_kernel_type = GPy.kern.RBF
-    n = 801
-    min_dim = 1
-    max_dim = 2
+    print(f'Running with kernel {kernel_type} and data simulator {simulator_type}')
+    gp_kernel_type = kernel_type
     max_num_inducing = n
     dimensions = range(min_dim, max_dim + 1)
     num_inducings = range(1, max_num_inducing + 1, 50)
-    simulator = RBFSimulator(n)
+    simulator = simulator_type(n)
     results = ExperimentResults(dimensions, num_inducings)
 
     # Increase the number of inducing inputs until n==m
@@ -58,7 +70,8 @@ def main():
             results.traces[i, j] = np.trace(K_tilda)
             _, results.log_determinants[i, j] = np.linalg.slogdet(K_tilda)
 
-    pickle.dump(results, open("results.p", "wb"))
+    fname = f"results_{tag}.p"
+    pickle.dump(results, open(os.path.join('results', fname), "wb"))
     plot_experiment_results(results)
 
 

@@ -4,6 +4,7 @@ import pickle
 
 
 class ExperimentResults(object):
+    """Contains experiment results for the increasing dimension experiment."""
     def __init__(self, dimensions, num_inducings):
         self.num_inducings = num_inducings
         self.dimensions = dimensions
@@ -23,7 +24,7 @@ class ExperimentResults(object):
 
     @property
     def diff_mse(self):
-        return np.subtract(results.mses_full, results.mses_sparse)
+        return np.subtract(self.mses_full, self.mses_sparse)
 
     def _init_results_matrix(self):
         return np.full((self.len_dimensions, self.len_num_inducings_points), -1.)
