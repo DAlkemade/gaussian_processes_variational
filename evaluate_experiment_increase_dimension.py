@@ -21,6 +21,10 @@ class ExperimentResults(object):
     def len_num_inducings_points(self):
         return len(self.num_inducings)
 
+    @property
+    def diff_mse(self):
+        return np.subtract(results.mses_full, results.mses_sparse)
+
     def _init_results_matrix(self):
         return np.full((self.len_dimensions, self.len_num_inducings_points), -1.)
 
@@ -51,13 +55,11 @@ def plot_heatmap(values_matrix, yvalues, xvalues, decimals=None):
 
 
 def plot_experiment_results(results: ExperimentResults):
-    diff_mse = np.subtract(results.mses_full, results.mses_sparse)
-    diff_mse = np.round(diff_mse, decimals=4)
 
     dimensions = results.dimensions
     num_inducings = results.num_inducings
 
-    plot_heatmap(diff_mse, dimensions, num_inducings)
+    plot_heatmap(results.diff_mse, dimensions, num_inducings, decimals=4)
 
     plot_heatmap(results.divergences, dimensions, num_inducings, decimals=2)
 
