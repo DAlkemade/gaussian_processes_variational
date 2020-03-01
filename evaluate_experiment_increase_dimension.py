@@ -3,11 +3,13 @@ import numpy as np
 import pickle
 
 
+
+
 class ExperimentResults(object):
     """Contains experiment results for the increasing dimension experiment."""
-    def __init__(self, dimensions, num_inducings):
-        self.num_inducings = num_inducings
-        self.dimensions = dimensions
+    def __init__(self, row_labels, column_labels):
+        self.column_labels = column_labels
+        self.row_labels = row_labels
         self.mses_full = self._init_results_matrix()
         self.mses_sparse = self._init_results_matrix()
         self.divergences = self._init_results_matrix()
@@ -16,19 +18,31 @@ class ExperimentResults(object):
         self.runtime = self._init_results_matrix()
 
     @property
-    def len_dimensions(self):
-        return len(self.dimensions)
+    def len_row_labels(self):
+        return len(self.row_labels)
 
     @property
-    def len_num_inducings_points(self):
-        return len(self.num_inducings)
+    def len_column_labels(self):
+        return len(self.column_labels)
 
     @property
     def diff_mse(self):
         return np.subtract(self.mses_full, self.mses_sparse)
 
     def _init_results_matrix(self):
-        return np.full((self.len_dimensions, self.len_num_inducings_points), -1.)
+        return np.full((self.len_row_labels, self.len_column_labels), -1.)
+
+class ExperimentResultsDimInd(ExperimentResults):
+    def __init__(self, row_labels, column_labels):
+        super().__init__(row_labels, column_labels)
+
+    @property
+    def dimensions(self):
+        return self.row_labels
+
+    @property
+    def inducing_inputs(self):
+        return self.column_labels
 
 
 def plot_heatmap(values_matrix, yvalues, xvalues, decimals=None):
@@ -57,10 +71,10 @@ def plot_heatmap(values_matrix, yvalues, xvalues, decimals=None):
     plt.show()
 
 
-def plot_experiment_results(results: ExperimentResults):
+def plot_experiment_results(results: ExperimentResultsDimInd):
 
     dimensions = results.dimensions
-    num_inducings = results.num_inducings
+    num_inducings = results.inducing_inputs
 
     plot_heatmap(results.diff_mse, dimensions, num_inducings, decimals=4)
 

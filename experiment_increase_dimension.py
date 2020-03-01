@@ -10,7 +10,7 @@ import tqdm
 from GPy.kern import Kern
 
 from compare import diff_marginal_likelihoods, find_mse
-from evaluate_experiment_increase_dimension import plot_experiment_results, ExperimentResults
+from evaluate_experiment_increase_dimension import plot_experiment_results, ExperimentResultsDimInd
 from main import create_full_gp, create_sparse_gp
 from simulation import RBFSimulator, LinearSimulator, FriedMan1Simulator
 
@@ -28,7 +28,7 @@ def calc_K_tilda(kernel: Type[Kern], X_train: np.array, X_m: np.array):
 
 def main():
     Experiment = namedtuple('Experiment', ['tag', 'simulator', 'kernel', 'min_dim', 'max_dim'])
-    n = 51
+    n = 801
     experiments = [
         Experiment('linear', LinearSimulator, GPy.kern.Linear, 1, 20),
         Experiment('rbf', RBFSimulator, GPy.kern.RBF, 1, 20),
@@ -46,22 +46,22 @@ def run_single_experiment(tag: str, kernel_type, simulator_type, n: int, min_dim
     dimensions = range(min_dim, max_dim + 1)
     num_inducings = range(1, max_num_inducing + 1, 50)
     simulator = simulator_type(n)
-    results = ExperimentResults(dimensions, num_inducings)
+    results = ExperimentResultsDimInd(dimensions, num_inducings)
 
     # Increase the number of inducing inputs until n==m
     # Note that the runtime of a single iteration increases with num_inducing squared
 
     for i in tqdm.tqdm(range(len(dimensions))):
+        dim = dimensions[i]
+        data = simulator.simulate(dim)
+        kernel_full = gp_kernel_type(dim)
+        m_full = create_full_gp(data.X_train, data.y_train, kernel_full)
         for j in range(len(num_inducings)):
-            dim = dimensions[i]
             num_inducing = num_inducings[j]
-            data = simulator.simulate(dim)
             kernel_sparse = gp_kernel_type(dim)
             before = time.time()
             m_sparse = create_sparse_gp(data.X_train, data.y_train, kernel_sparse, num_inducing)
             results.runtime[i, j] = time.time() - before
-            kernel_full = gp_kernel_type(dim)
-            m_full = create_full_gp(data.X_train, data.y_train, kernel_full)
             mse_full = find_mse(m_full, data.X_test, data.y_test)
             mse_sparse = find_mse(m_sparse, data.X_test, data.y_test)
             divergence = diff_marginal_likelihoods(m_sparse, m_full, True)
