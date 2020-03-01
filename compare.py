@@ -1,5 +1,8 @@
+from typing import Type
+
 import numpy as np
 from GPy.core.parameterization.variational import NormalPosterior
+from GPy.kern import Kern
 from sklearn.metrics import mean_squared_error
 
 
@@ -53,3 +56,24 @@ def find_mse(model, samples, y_true):
     """
     mu, covar = model.predict_noiseless(samples, full_cov=True)
     return mean_squared_error(y_true, mu)
+
+
+def calc_K_tilda(kernel: Type[Kern], X_train: np.array, X_m: np.array):
+    """Find K_tilda = Cov(f|fm)."""
+    Knn = kernel.K(X_train, X_train)
+    Knm = kernel.K(X_train, X_m)
+    Kmn = kernel.K(X_m, X_train)
+    Kmm = kernel.K(X_m, X_m)
+    temp = np.dot(np.dot(Knm, np.linalg.inv(Kmm)), Kmn)
+    K_tilda = np.subtract(Knn, temp)
+    return K_tilda
+
+
+def calc_metric3(K_tilda):
+    """Calculate difference between trace and determinant of K_tilda"""
+    trace = np.trace(K_tilda)
+    # determinant = np.linalg.det(K_tilda)
+    _, log_determinant = np.linalg.slogdet(K_tilda)
+    diff = trace - log_determinant
+    print(trace, log_determinant, diff)
+    return diff

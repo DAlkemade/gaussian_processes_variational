@@ -1,29 +1,16 @@
 import pickle
 from collections import namedtuple
-from typing import Type
 
 import time
 import os
 import GPy
 import numpy as np
 import tqdm
-from GPy.kern import Kern
 
-from compare import diff_marginal_likelihoods, find_mse
+from compare import diff_marginal_likelihoods, find_mse, calc_K_tilda
 from evaluate_experiment_increase_dimension import plot_experiment_results, ExperimentResultsDimInd
 from main import create_full_gp, create_sparse_gp
 from simulation import RBFSimulator, LinearSimulator, FriedMan1Simulator
-
-
-def calc_K_tilda(kernel: Type[Kern], X_train: np.array, X_m: np.array):
-    """Find K_tilda = Cov(f|fm)."""
-    Knn = kernel.K(X_train, X_train)
-    Knm = kernel.K(X_train, X_m)
-    Kmn = kernel.K(X_m, X_train)
-    Kmm = kernel.K(X_m, X_m)
-    temp = np.dot(np.dot(Knm, np.linalg.inv(Kmm)), Kmn)
-    K_tilda = np.subtract(Knn, temp)
-    return K_tilda
 
 
 def main():
@@ -76,16 +63,6 @@ def run_single_experiment(tag: str, kernel_type, simulator_type, n: int, min_dim
     fname = f"results_{tag}.p"
     pickle.dump(results, open(os.path.join('results', fname), "wb"))
     plot_experiment_results(results)
-
-
-def calc_metric3(K_tilda):
-    """Calculate difference between trace and determinant of K_tilda"""
-    trace = np.trace(K_tilda)
-    # determinant = np.linalg.det(K_tilda)
-    _, log_determinant = np.linalg.slogdet(K_tilda)
-    diff = trace - log_determinant
-    print(trace, log_determinant, diff)
-    return diff
 
 
 if __name__ == "__main__":
