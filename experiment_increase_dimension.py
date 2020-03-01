@@ -2,6 +2,7 @@ import pickle
 from collections import namedtuple
 from typing import Type
 
+import time
 import os
 import GPy
 import numpy as np
@@ -56,7 +57,9 @@ def run_single_experiment(tag: str, kernel_type, simulator_type, n: int, min_dim
             num_inducing = num_inducings[j]
             data = simulator.simulate(dim)
             kernel_sparse = gp_kernel_type(dim)
+            before = time.time()
             m_sparse = create_sparse_gp(data.X_train, data.y_train, kernel_sparse, num_inducing)
+            results.runtime[i, j] = time.time() - before
             kernel_full = gp_kernel_type(dim)
             m_full = create_full_gp(data.X_train, data.y_train, kernel_full)
             mse_full = find_mse(m_full, data.X_test, data.y_test)

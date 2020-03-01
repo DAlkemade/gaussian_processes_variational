@@ -13,6 +13,7 @@ class ExperimentResults(object):
         self.divergences = self._init_results_matrix()
         self.traces = self._init_results_matrix()
         self.log_determinants = self._init_results_matrix()
+        self.runtime = self._init_results_matrix()
 
     @property
     def len_dimensions(self):
@@ -52,6 +53,7 @@ def plot_heatmap(values_matrix, yvalues, xvalues, decimals=None):
     fig.tight_layout()
     plt.xlabel("Number of inducing inputs")
     plt.ylabel("Number of dimensions")
+    fig.colorbar(im)
     plt.show()
 
 
@@ -68,6 +70,8 @@ def plot_experiment_results(results: ExperimentResults):
     plot_heatmap(metric3, dimensions, num_inducings, decimals=4)
 
     plot_heatmap(results.traces, dimensions, num_inducings, decimals=4)
+
+    plot_heatmap(results.runtime, dimensions, num_inducings, decimals=4)
 
     slice_idx = 0
     divergences_slice = results.divergences[:, slice_idx]
