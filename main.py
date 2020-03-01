@@ -61,7 +61,7 @@ def create_kernel(X, kernel_class):
 
 
 def create_sparse_gp(X, y, kernel, num_inducing, plot=False, fix_inducing_inputs=False, fix_variance=False,
-                     fix_lengthscale=False):
+                     fix_lengthscale=False, optimizer=None):
     """Create sparse Gaussian Process using the method of Titsias, 2009
 
     :param kernel_type: class of kernel
@@ -87,7 +87,7 @@ def create_sparse_gp(X, y, kernel, num_inducing, plot=False, fix_inducing_inputs
     if fix_lengthscale:
         m.rbf.lengthscale.fix()
 
-    m.optimize('bfgs')
+    m.optimize(optimizer=optimizer)
     if plot:
         # m.plot()
         m.plot(plot_limits=(-10, 30))
