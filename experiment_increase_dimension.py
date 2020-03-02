@@ -14,24 +14,26 @@ from simulation import RBFSimulator, LinearSimulator, FriedMan1Simulator
 
 
 def main():
-    Experiment = namedtuple('Experiment', ['tag', 'simulator', 'kernel', 'min_dim', 'max_dim'])
+    Experiment = namedtuple('Experiment', ['tag', 'simulator', 'kernel', 'dimensions', 'num_inducings'])
     n = 801
+
     experiments = [
-        Experiment('linear', LinearSimulator, GPy.kern.Linear, 1, 20),
-        Experiment('rbf', RBFSimulator, GPy.kern.RBF, 1, 20),
-        Experiment('friedman', FriedMan1Simulator, GPy.kern.RBF, 5, 20)
+        # Experiment('linear', LinearSimulator, GPy.kern.Linear, range(1, 20 + 1), range(1, n + 1, 50)),
+        Experiment('rbf', RBFSimulator, GPy.kern.RBF, [1, 2, 3, 4, 5, 10, 15, 20],
+                   [1, 2, 3, 4, 5, 10, 20, 50, 100, 200, 300, 400, 800]),
+        Experiment('friedman', FriedMan1Simulator, GPy.kern.RBF, [5, 6, 7, 8, 9, 10, 15, 20],
+                   [1, 2, 3, 4, 5, 10, 20, 50, 100, 200, 300, 400, 800])
     ]
     for experiment in experiments:
-        run_single_experiment(experiment.tag, experiment.kernel, experiment.simulator, n, experiment.min_dim, experiment.max_dim)
+        run_single_experiment(experiment.tag, experiment.kernel, experiment.simulator, n, experiment.dimensions,
+                              experiment.num_inducings)
 
 
-def run_single_experiment(tag: str, kernel_type, simulator_type, n: int, min_dim: int, max_dim: int):
+def run_single_experiment(tag: str, kernel_type, simulator_type, n: int, dimensions: list, num_inducings: list):
     """Run experiment with changing number of inducing variables."""
     print(f'Running with kernel {kernel_type} and data simulator {simulator_type}')
     gp_kernel_type = kernel_type
-    max_num_inducing = n
-    dimensions = range(min_dim, max_dim + 1)
-    num_inducings = range(1, max_num_inducing + 1, 50)
+
     simulator = simulator_type(n)
     results = ExperimentResultsDimInd(dimensions, num_inducings)
 
