@@ -124,7 +124,7 @@ def evaluate_sparse_gp(X_test: np.array, y_test: np.array, m_sparse, m_full):
 def main():
     """Run the experiment using a certain config defined in the config file."""
     parser = ArgumentParser()
-    parser.add_argument('--config', type=str, default='simple_linear.ini')
+    parser.add_argument('--config', type=str, default='single_point_for_plot.ini')
     args = parser.parse_args()
     config = configparser.ConfigParser()
     config.read(os.path.join('configs', args.config))
@@ -134,7 +134,7 @@ def main():
     num_inducing = config['SPARSE_GP'].getint('num_inducing')
     if config['GP']['kernel'] == RBF:
         kernel_class = GPy.kern.RBF
-    if config['GP']['kernel'] == LINEAR:
+    elif config['GP']['kernel'] == LINEAR:
         kernel_class = GPy.kern.Linear
     else:
         raise ValueError("Unknown kernel")
