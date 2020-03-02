@@ -14,6 +14,7 @@ from simulation import Data, LinearSimulator, FriedMan1Simulator, RBFSimulator
 np.random.seed(101)
 
 RBF = 'rbf'
+LINEAR = 'linear'
 GPy.plotting.change_plotting_library('matplotlib')
 
 
@@ -133,6 +134,8 @@ def main():
     num_inducing = config['SPARSE_GP'].getint('num_inducing')
     if config['GP']['kernel'] == RBF:
         kernel_class = GPy.kern.RBF
+    if config['GP']['kernel'] == LINEAR:
+        kernel_class = GPy.kern.Linear
     else:
         raise ValueError("Unknown kernel")
     plot = input_dim <= 1
