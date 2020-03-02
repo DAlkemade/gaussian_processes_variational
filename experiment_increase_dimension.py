@@ -40,7 +40,12 @@ def run_single_experiment(tag: str, kernel_type, simulator_type, n: int, min_dim
 
     for i in tqdm.tqdm(range(len(dimensions))):
         dim = dimensions[i]
-        data = simulator.simulate(dim)
+        try:
+            data = simulator.simulate(dim)
+        except Exception:
+            print("Data simulation went wrong, skipping this one")
+            continue
+
         kernel_full = gp_kernel_type(dim)
         m_full = create_full_gp(data.X_train, data.y_train, kernel_full)
         for j in range(len(num_inducings)):

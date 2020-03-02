@@ -30,7 +30,7 @@ class ExperimentResults(object):
         return np.subtract(self.mses_full, self.mses_sparse)
 
     def _init_results_matrix(self):
-        return np.full((self.len_row_labels, self.len_column_labels), -1.)
+        return np.full((self.len_row_labels, self.len_column_labels), np.nan)
 
 class ExperimentResultsDimInd(ExperimentResults):
     def __init__(self, row_labels, column_labels):
