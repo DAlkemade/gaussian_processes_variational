@@ -20,9 +20,9 @@ def main():
     experiments = [
         # Experiment('linear', LinearSimulator, GPy.kern.Linear, range(1, 20 + 1), range(1, n + 1, 50)),
         Experiment('rbf', RBFSimulator, GPy.kern.RBF, [1, 2, 3, 4, 5, 10, 15, 20],
-                   [1, 2, 3, 4, 5, 10, 20, 50, 100, 200, 300, 400, 800]),
+                   [1, 2, 3, 4, 5, 10, 20, 50, 100, 200, 300, 400, n]),
         Experiment('friedman', FriedMan1Simulator, GPy.kern.RBF, [5, 6, 7, 8, 9, 10, 15, 20],
-                   [1, 2, 3, 4, 5, 10, 20, 50, 100, 200, 300, 400, 800])
+                   [1, 2, 3, 4, 5, 10, 20, 50, 100, 200, 300, 400, n])
     ]
     for experiment in experiments:
         run_single_experiment(experiment.tag, experiment.kernel, experiment.simulator, n, experiment.dimensions,

@@ -28,7 +28,7 @@ class ExperimentResults(object):
 
     @property
     def diff_mse(self):
-        return np.subtract(self.mses_full, self.mses_sparse)
+        return np.subtract(self.mses_sparse, self.mses_full)
 
     def _init_results_matrix(self):
         return np.full((self.len_row_labels, self.len_column_labels), np.nan)
@@ -87,7 +87,7 @@ def plot_experiment_results(results: ExperimentResultsDimInd):
     plot_heatmap(results.diff_mse, dimensions, num_inducings)
 
     plot_heatmap(results.divergences, dimensions, num_inducings, remove_larger_than=6000)
-    plot_heatmap(results.divergences[:, 1:], dimensions, num_inducings[1:], remove_larger_than=6000)
+    # plot_heatmap(results.divergences[:, 1:], dimensions, num_inducings[1:], remove_larger_than=6000)
 
     metric3 = np.subtract(results.traces, results.log_determinants)
     plot_heatmap(metric3, dimensions, num_inducings, log=True)
@@ -95,6 +95,11 @@ def plot_experiment_results(results: ExperimentResultsDimInd):
     plot_heatmap(results.traces, dimensions, num_inducings, log=True)
 
     plot_heatmap(results.runtime, dimensions, num_inducings)
+
+    plot_heatmap(results.mses_full, dimensions, num_inducings)
+    plot_heatmap(results.mses_sparse, dimensions, num_inducings)
+
+
 
     slice_idx = 5
     print(f'Slice inducing points: {num_inducings[slice_idx]}')
@@ -118,5 +123,5 @@ def plot_experiment_results(results: ExperimentResultsDimInd):
 
 
 if __name__ == '__main__':
-    results = pickle.load(open('results/results_linear_complete.p', "rb"))
+    results = pickle.load(open('results/results_friedman_complete.p', "rb"))
     plot_experiment_results(results)

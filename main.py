@@ -90,8 +90,8 @@ def create_sparse_gp(X, y, kernel, num_inducing, plot=False, fix_inducing_inputs
 
     m.optimize(optimizer=optimizer)
     if plot:
-        # m.plot()
-        m.plot(plot_limits=(-10, 30))
+        m.plot()
+        # m.plot(plot_limits=(-10, 30))
         plt.title("Sparse GP model")
         plt.show()
         print(m)
