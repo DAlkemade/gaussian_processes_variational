@@ -125,5 +125,5 @@ dmypy.json
 .pyre/
 
 .idea/
-*.p
-*.png
+images/
+results/
