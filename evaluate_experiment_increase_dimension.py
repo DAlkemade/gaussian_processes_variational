@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pickle
 from decimal import Decimal
-from matplotlib.colors import LogNorm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 
