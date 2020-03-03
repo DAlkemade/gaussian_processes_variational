@@ -19,9 +19,9 @@ class Data(object):
 class Simulator(ABC):
     """Simulates data with a method specified in _simulate."""
 
-    def __init__(self, n_samples):
+    def __init__(self, n_samples, random_state=42):
         self.n_samples = n_samples
-        self.random_state = 42
+        self.random_state = random_state
 
     @property
     def _n_test_plus_train(self):

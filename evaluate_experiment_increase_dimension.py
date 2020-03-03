@@ -50,13 +50,14 @@ class ExperimentResultsDimInd(ExperimentResults):
         return self.column_labels
 
 
-def plot_heatmap(values_matrix: np.array, yvalues, xvalues, remove_larger_than: int = None, log=False, fname:str = None):
+def plot_heatmap(result_matrix: np.array, yvalues, xvalues, remove_larger_than: int = None, log=False, fname:str = None, vmin=None):
+    values_matrix = result_matrix.copy()
     if type(remove_larger_than) is int:
         values_matrix[abs(values_matrix) > remove_larger_than] = np.nan
 
     fig, ax = plt.subplots(figsize=(15, 15))
     if log:
-        im = ax.matshow(np.log(values_matrix))
+        im = ax.matshow(np.log(values_matrix), vmin=vmin)
         # im = ax.matshow(np.log(values_matrix), norm=LogNorm(vmin=0.01, vmax=1))
 
     else:
@@ -95,8 +96,9 @@ def plot_experiment_results(results: ExperimentResultsDimInd, tag: str):
 
     plot_heatmap(results.diff_mse, dimensions, num_inducings, fname=f'{tag}_diffmse')
 
-    plot_heatmap(results.divergences, dimensions, num_inducings, remove_larger_than=6000, fname=f'{tag}_divergence')
-    # plot_heatmap(results.divergences[:, 1:], dimensions, num_inducings[1:], remove_larger_than=6000)
+    plot_heatmap(results.divergences, dimensions, num_inducings, fname=f'{tag}_divergence')
+    # For linear:
+    # plot_heatmap(results.divergences, dimensions, num_inducings, remove_larger_than=20000, fname=f'{tag}_divergence', vmin=1.)
 
     metric3 = np.subtract(results.traces, results.log_determinants)
     plot_heatmap(metric3, dimensions, num_inducings, log=True)
@@ -109,7 +111,7 @@ def plot_experiment_results(results: ExperimentResultsDimInd, tag: str):
 
 
 
-    slice_idx = 5
+    slice_idx = 0
     print(f'Slice inducing points: {num_inducings[slice_idx]}')
     divergences_slice = results.divergences[:, slice_idx]
     plt.plot(dimensions, divergences_slice)
@@ -121,6 +123,7 @@ def plot_experiment_results(results: ExperimentResultsDimInd, tag: str):
 
     plt.plot(dimensions, results.mses_sparse[:, slice_idx], label='sparse')
     plt.plot(dimensions, results.mses_full[:, slice_idx], label='full')
+    # plt.yscale('log')
 
     # plt.plot(dimensions, [0] * len(dimensions))
     # plt.title("KL divergence w.r.t the number of inducing variables")
@@ -131,6 +134,6 @@ def plot_experiment_results(results: ExperimentResultsDimInd, tag: str):
 
 
 if __name__ == '__main__':
-    tag = 'linear_fixed_informative'
-    results = pickle.load(open('results/results_linear_fixed_informative_complete.p', "rb"))
+    tag = 'linear_high_dim'
+    results = pickle.load(open('results/results_linear_high_dim2.p', "rb"))
     plot_experiment_results(results, tag)
