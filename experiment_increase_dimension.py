@@ -18,21 +18,22 @@ def main():
     n = 801
 
     experiments = [
-        # Experiment('linear', LinearSimulator, GPy.kern.Linear, range(1, 20 + 1), range(1, n + 1, 50)),
-        Experiment('rbf', RBFSimulator, GPy.kern.RBF, [1, 2, 3, 4, 5, 10, 15, 20],
+        Experiment('linear', LinearSimulator, GPy.kern.Linear, [1, 2, 3, 4, 5, 10, 15, 20],
                    [1, 2, 3, 4, 5, 10, 20, 50, 100, 200, 300, 400, n]),
-        Experiment('friedman', FriedMan1Simulator, GPy.kern.RBF, [5, 6, 7, 8, 9, 10, 15, 20],
-                   [1, 2, 3, 4, 5, 10, 20, 50, 100, 200, 300, 400, n])
+        # Experiment('rbf', RBFSimulator, GPy.kern.RBF, [1, 2, 3, 4, 5, 10, 15, 20],
+        #            [1, 2, 3, 4, 5, 10, 20, 50, 100, 200, 300, 400, n]),
     ]
     for experiment in experiments:
         run_single_experiment(experiment.tag, experiment.kernel, experiment.simulator, n, experiment.dimensions,
                               experiment.num_inducings)
 
 
-def run_single_experiment(tag: str, kernel_type, simulator_type, n: int, dimensions: list, num_inducings: list):
+def run_single_experiment(tag: str, kernel_type, simulator_type, n: int, dimensions: list, num_inducings: list,
+                          fix_dimension_at: int = None):
     """Run experiment with changing number of inducing variables."""
     print(f'Running with kernel {kernel_type} and data simulator {simulator_type}')
     gp_kernel_type = kernel_type
+
 
     simulator = simulator_type(n)
     results = ExperimentResultsDimInd(dimensions, num_inducings)
@@ -42,8 +43,9 @@ def run_single_experiment(tag: str, kernel_type, simulator_type, n: int, dimensi
 
     for i in tqdm.tqdm(range(len(dimensions))):
         dim = dimensions[i]
+        n_informative = dim if fix_dimension_at is None else fix_dimension_at
         try:
-            data = simulator.simulate(dim)
+            data = simulator.simulate(dim, n_informative=n_informative)
         except Exception:
             print("Data simulation went wrong, skipping this one")
             continue
@@ -69,7 +71,6 @@ def run_single_experiment(tag: str, kernel_type, simulator_type, n: int, dimensi
 
     fname = f"results_{tag}.p"
     pickle.dump(results, open(os.path.join('results', fname), "wb"))
-    plot_experiment_results(results)
 
 
 if __name__ == "__main__":

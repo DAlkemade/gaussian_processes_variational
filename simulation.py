@@ -54,6 +54,10 @@ class LinearSimulator(Simulator):
     """Simulate linear data."""
 
     def _simulate(self, n_features, **kwargs):
+        """Simulate linear data.
+
+        Note that if **kwargs do not specify n_informative, the default is n_informative=10
+        """
         return make_regression(n_samples=self._n_test_plus_train, noise=np.sqrt(SIMULATION_NOISE_VAR),
                                n_features=n_features, random_state=self.random_state, **kwargs)
 

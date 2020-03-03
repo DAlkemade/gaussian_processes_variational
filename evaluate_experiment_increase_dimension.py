@@ -1,8 +1,11 @@
+import os
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pickle
 from decimal import Decimal
 from matplotlib.colors import LogNorm
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 
 class ExperimentResults(object):
@@ -47,7 +50,7 @@ class ExperimentResultsDimInd(ExperimentResults):
         return self.column_labels
 
 
-def plot_heatmap(values_matrix, yvalues, xvalues, remove_larger_than: int = None, log=False):
+def plot_heatmap(values_matrix: np.array, yvalues, xvalues, remove_larger_than: int = None, log=False, fname:str = None):
     if type(remove_larger_than) is int:
         values_matrix[abs(values_matrix) > remove_larger_than] = np.nan
 
@@ -76,17 +79,23 @@ def plot_heatmap(values_matrix, yvalues, xvalues, remove_larger_than: int = None
     fig.tight_layout()
     plt.xlabel("Number of inducing inputs")
     plt.ylabel("Number of dimensions")
-    fig.colorbar(im)
+
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes("right", size="5%", pad=0.1)
+
+    fig.colorbar(im, cax=cax)
     plt.show()
+    if fname is not None:
+        fig.savefig(os.path.join('images', fname), bbox_inches='tight')
 
 
-def plot_experiment_results(results: ExperimentResultsDimInd):
+def plot_experiment_results(results: ExperimentResultsDimInd, tag: str):
     dimensions = results.dimensions
     num_inducings = results.inducing_inputs
 
-    plot_heatmap(results.diff_mse, dimensions, num_inducings)
+    plot_heatmap(results.diff_mse, dimensions, num_inducings, fname=f'{tag}_diffmse')
 
-    plot_heatmap(results.divergences, dimensions, num_inducings, remove_larger_than=6000)
+    plot_heatmap(results.divergences, dimensions, num_inducings, remove_larger_than=6000, fname=f'{tag}_divergence')
     # plot_heatmap(results.divergences[:, 1:], dimensions, num_inducings[1:], remove_larger_than=6000)
 
     metric3 = np.subtract(results.traces, results.log_determinants)
@@ -94,10 +103,9 @@ def plot_experiment_results(results: ExperimentResultsDimInd):
 
     plot_heatmap(results.traces, dimensions, num_inducings, log=True)
 
-    plot_heatmap(results.runtime, dimensions, num_inducings)
+    plot_heatmap(results.runtime, dimensions, num_inducings, fname=f'{tag}_runtime')
 
-    plot_heatmap(results.mses_full, dimensions, num_inducings)
-    plot_heatmap(results.mses_sparse, dimensions, num_inducings)
+    plot_heatmap(results.mses_sparse, dimensions, num_inducings, fname=f'{tag}_msesparse')
 
 
 
@@ -123,5 +131,6 @@ def plot_experiment_results(results: ExperimentResultsDimInd):
 
 
 if __name__ == '__main__':
-    results = pickle.load(open('results/results_friedman_complete.p', "rb"))
-    plot_experiment_results(results)
+    tag = 'linear_fixed_informative'
+    results = pickle.load(open('results/results_linear_fixed_informative_complete.p', "rb"))
+    plot_experiment_results(results, tag)
