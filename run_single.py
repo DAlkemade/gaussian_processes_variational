@@ -7,9 +7,9 @@ import GPy
 import matplotlib.pyplot as plt
 import numpy as np
 
-from compare import diff_marginal_likelihoods, find_mse
-from non_gp_alternatives import fit_svm, linear_regression
-from simulation import Data, LinearSimulator, FriedMan1Simulator, RBFSimulator
+from gaussian_processes_variational.compare import diff_marginal_likelihoods, find_mse
+from gaussian_processes_variational.non_gp_alternatives import fit_svm, linear_regression
+from gaussian_processes_variational.simulation import LinearSimulator, FriedMan1Simulator, RBFSimulator
 
 np.random.seed(101)
 

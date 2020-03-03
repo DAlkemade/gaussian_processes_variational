@@ -8,7 +8,7 @@ import numpy as np
 from GPy.models import SparseGPRegression
 from tqdm import trange
 
-from simulation import LinearSimulator, RBFSimulator
+from gaussian_processes_variational.simulation import LinearSimulator, RBFSimulator
 
 
 class RuntimeResult(object):

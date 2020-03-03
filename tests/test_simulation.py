@@ -1,4 +1,4 @@
-from simulation import LinearSimulator, Simulator, FriedMan1Simulator, RBFSimulator
+from gaussian_processes_variational.simulation import LinearSimulator, Simulator, FriedMan1Simulator, RBFSimulator
 from typing import Type
 
 

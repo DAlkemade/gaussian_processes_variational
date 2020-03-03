@@ -2,8 +2,8 @@ from collections import namedtuple
 
 import GPy
 
-from experiment_increase_dimension import run_single_experiment
-from simulation import LinearSimulator
+from gaussian_processes_variational.num_inducing_dimension_experiments import run_single_experiment
+from gaussian_processes_variational.simulation import LinearSimulator
 
 
 def main():

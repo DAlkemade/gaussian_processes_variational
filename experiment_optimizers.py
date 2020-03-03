@@ -7,10 +7,11 @@ import GPy
 import numpy as np
 import tqdm
 
-from compare import diff_marginal_likelihoods, find_mse, calc_K_tilda
-from evaluate_experiment_increase_dimension import plot_experiment_results, ExperimentResultsDimInd
+from gaussian_processes_variational.compare import diff_marginal_likelihoods, find_mse, calc_K_tilda
+from evaluate_experiment_increase_dimension import plot_experiment_results
+from gaussian_processes_variational.num_inducing_dimension_experiments import ExperimentResultsDimInd
 from run_single import create_full_gp, create_sparse_gp
-from simulation import RBFSimulator, LinearSimulator, FriedMan1Simulator
+from gaussian_processes_variational.simulation import RBFSimulator, LinearSimulator, FriedMan1Simulator
 
 
 def main():
