@@ -10,18 +10,19 @@ import tqdm
 from compare import diff_marginal_likelihoods, find_mse, calc_K_tilda
 from evaluate_experiment_increase_dimension import plot_experiment_results, ExperimentResultsDimInd
 from main import create_full_gp, create_sparse_gp
-from simulation import RBFSimulator, LinearSimulator, FriedMan1Simulator
+from simulation import RBFSimulator, LinearSimulator
 
 
 def main():
+    """Run experiment for different datasets where a grid of number of inducings points and dimensions is explored."""
     Experiment = namedtuple('Experiment', ['tag', 'simulator', 'kernel', 'dimensions', 'num_inducings'])
     n = 801
+    inducing_points = [1, 2, 3, 4, 5, 10, 20, 50, 100, 200, 300, 400, n]
+    dimensions = [1, 2, 3, 4, 5, 10, 15, 20]
 
     experiments = [
-        Experiment('linear', LinearSimulator, GPy.kern.Linear, [1, 2, 3, 4, 5, 10, 15, 20],
-                   [1, 2, 3, 4, 5, 10, 20, 50, 100, 200, 300, 400, n]),
-        # Experiment('rbf', RBFSimulator, GPy.kern.RBF, [1, 2, 3, 4, 5, 10, 15, 20],
-        #            [1, 2, 3, 4, 5, 10, 20, 50, 100, 200, 300, 400, n]),
+        Experiment('linear', LinearSimulator, GPy.kern.Linear, dimensions, inducing_points),
+        Experiment('rbf', RBFSimulator, GPy.kern.RBF, dimensions, inducing_points),
     ]
     for experiment in experiments:
         run_single_experiment(experiment.tag, experiment.kernel, experiment.simulator, n, experiment.dimensions,
@@ -34,9 +35,8 @@ def run_single_experiment(tag: str, kernel_type, simulator_type, n: int, dimensi
     print(f'Running with kernel {kernel_type} and data simulator {simulator_type}')
     gp_kernel_type = kernel_type
 
-
     simulator = simulator_type(n)
-    results = ExperimentResultsDimInd(dimensions, num_inducings)
+    results = ExperimentResultsDimInd(dimensions, num_inducings, tag)
 
     # Increase the number of inducing inputs until n==m
     # Note that the runtime of a single iteration increases with num_inducing squared
@@ -69,8 +69,7 @@ def run_single_experiment(tag: str, kernel_type, simulator_type, n: int, dimensi
             results.traces[i, j] = np.trace(K_tilda)
             _, results.log_determinants[i, j] = np.linalg.slogdet(K_tilda)
 
-    fname = f"results_{tag}.p"
-    pickle.dump(results, open(os.path.join('results', fname), "wb"))
+    pickle.dump(results, open(os.path.join('results', results.fname), "wb"))
 
 
 if __name__ == "__main__":

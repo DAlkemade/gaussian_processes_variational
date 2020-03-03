@@ -123,6 +123,7 @@ def evaluate_sparse_gp(X_test: np.array, y_test: np.array, m_sparse, m_full):
 
 def main():
     """Run the experiment using a certain config defined in the config file."""
+    # Read config
     parser = ArgumentParser()
     parser.add_argument('--config', type=str, default='playground.ini')
     args = parser.parse_args()
@@ -155,15 +156,20 @@ def main():
     else:
         raise ValueError("Unknown simulation function given")
 
+    # Create kernels
+
     kernel = create_kernel(data.X_train, kernel_class)
     kernel_sparse = create_kernel(data.X_train, kernel_class)
+
+    # Create GPs
 
     m_full = create_full_gp(data.X_train, data.y_train, kernel, plot=plot)
     m_sparse = create_sparse_gp(data.X_train, data.y_train, kernel_sparse, num_inducing, plot=plot)
 
+    # Evaluate
     evaluate_sparse_gp(data.X_test, data.y_test, m_sparse, m_full)
 
-    # Test SVM
+    # Test SVM and Linear Regression
     fit_svm(data.X_train, data.y_train, plot=plot)
     linear_regression(data.X_train, data.y_train, plot=plot)
 

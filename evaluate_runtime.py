@@ -21,9 +21,6 @@ class RuntimeResult(object):
         self.gp_time = gp_time
         self.kernel_time = kernel_time
 
-    def pickle(self):
-        return pickle.dump(self, open(os.path.join('results', f'{self.label}_runtime.p'), "wb"))
-
     def plot(self):
         """Plot results for different parts of the process in one log plot."""
         plt.plot(self.dimensions, self.kernel_time, label='Kernel runtime')
@@ -45,8 +42,8 @@ def main():
     linear_result = compute_runtimes(dimensions, n, num_inducing, GPy.kern.Linear, LinearSimulator, 'linear')
     rbf_result = compute_runtimes(dimensions, n, num_inducing, GPy.kern.RBF, RBFSimulator, 'rbf')
 
-    linear_result.pickle()
-    rbf_result.pickle()
+    pickle.dump(linear_result, open(os.path.join('results', f'{linear_result.label}_runtime.p'), "wb"))
+    pickle.dump(rbf_result, open(os.path.join('results', f'{rbf_result.label}_runtime.p'), "wb"))
 
     linear_result.plot()
     rbf_result.plot()
