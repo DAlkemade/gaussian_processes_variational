@@ -9,7 +9,7 @@ import tqdm
 
 from compare import diff_marginal_likelihoods, find_mse, calc_K_tilda
 from evaluate_experiment_increase_dimension import plot_experiment_results, ExperimentResultsDimInd
-from main import create_full_gp, create_sparse_gp
+from run_single import create_full_gp, create_sparse_gp
 from simulation import RBFSimulator, LinearSimulator, FriedMan1Simulator
 
 

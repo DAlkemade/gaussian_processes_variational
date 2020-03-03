@@ -10,11 +10,14 @@ import tqdm
 from compare import diff_marginal_likelihoods, find_mse, calc_K_tilda
 from evaluate_experiment_increase_dimension import plot_experiment_results, ExperimentResultsDimInd
 from experiment_increase_dimension import run_single_experiment
-from main import create_full_gp, create_sparse_gp
+from run_single import create_full_gp, create_sparse_gp
 from simulation import RBFSimulator, LinearSimulator, FriedMan1Simulator
 
 
 def main():
+    """Run experiment with different dimensionalities and number of inducing inputs for a fixed number of
+    informative dimensions.
+    """
     Experiment = namedtuple('Experiment',
                             ['tag', 'simulator', 'kernel', 'dimensions', 'num_inducings', 'fix_dimension_at'])
     n = 801

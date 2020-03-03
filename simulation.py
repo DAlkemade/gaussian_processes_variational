@@ -9,6 +9,7 @@ SIMULATION_NOISE_VAR = 0.05
 
 
 class Data(object):
+    """Contains data."""
     def __init__(self, X_train, X_test, y_train, y_test):
         self.y_test = y_test
         self.y_train = y_train
@@ -46,6 +47,7 @@ class FriedMan1Simulator(Simulator):
         super().__init__(n_samples)
 
     def _simulate(self, n_features, **kwargs):
+        """Simulate Friedman regression problem 1."""
         return make_friedman1(n_samples=self._n_test_plus_train, noise=np.sqrt(SIMULATION_NOISE_VAR),
                               n_features=n_features, random_state=self.random_state)
 
