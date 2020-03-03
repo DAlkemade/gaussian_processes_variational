@@ -12,6 +12,8 @@ from simulation import LinearSimulator, RBFSimulator
 
 
 class RuntimeResult(object):
+    """Stores results of the runtime experiments and saves and plots them."""
+
     def __init__(self, kernel_time, gp_time, opt_time, dimensions, label: str):
         self.dimensions = dimensions
         self.label = label
@@ -20,9 +22,10 @@ class RuntimeResult(object):
         self.kernel_time = kernel_time
 
     def pickle(self):
-        return pickle.dump(self, open(os.path.join('results', f'{self.label}_runtime'), "wb"))
+        return pickle.dump(self, open(os.path.join('results', f'{self.label}_runtime.p'), "wb"))
 
     def plot(self):
+        """Plot results for different parts of the process in one log plot."""
         plt.plot(self.dimensions, self.kernel_time, label='Kernel runtime')
         plt.plot(self.dimensions, self.gp_time, label='GP runtime')
         plt.plot(self.dimensions, self.opt_time, label='Optimization runtime')
@@ -34,12 +37,13 @@ class RuntimeResult(object):
 
 
 def main():
+    """Run runtime experiment."""
     num_inducing = 50
-    n = 500
-    dimensions = range(1, 31, 10)
+    n = 1500
+    dimensions = range(1, 101, 10)
 
     linear_result = compute_runtimes(dimensions, n, num_inducing, GPy.kern.Linear, LinearSimulator, 'linear')
-    rbf_result = compute_runtimes(dimensions, n, num_inducing, GPy.kern.RBF, RBFSimulator, 'linear')
+    rbf_result = compute_runtimes(dimensions, n, num_inducing, GPy.kern.RBF, RBFSimulator, 'rbf')
 
     linear_result.pickle()
     rbf_result.pickle()
@@ -49,6 +53,7 @@ def main():
 
 
 def compute_runtimes(dimensions, n, num_inducing, kernel_class, simulator_class, tag: str):
+    """Compute runtimes at different dimensionalities for sample_size iterations at every dimension."""
     sample_size = 10
     kernel_creation = []
     gp_creation = []
