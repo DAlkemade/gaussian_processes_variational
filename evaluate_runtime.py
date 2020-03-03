@@ -36,7 +36,7 @@ class RuntimeResult(object):
 def main():
     """Run runtime experiment."""
     num_inducing = 50
-    n = 1500
+    n = 1000
     dimensions = range(1, 101, 10)
 
     linear_result = compute_runtimes(dimensions, n, num_inducing, GPy.kern.Linear, LinearSimulator, 'linear')
