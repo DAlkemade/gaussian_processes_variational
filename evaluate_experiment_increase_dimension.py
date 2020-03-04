@@ -6,6 +6,22 @@ from decimal import Decimal
 from gaussian_processes_variational.experiment_data_containers import ExperimentResultsDimInd
 
 
+def plot_slice(slice_idx: int, x_values: np.array, array_tuples, xlabel:str, ylabel:str, legend=False, show_xaxis=False, log=False):
+
+    for array, label in array_tuples:
+        slice = array[:, slice_idx]
+        plt.plot(x_values, slice, label=label)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    if show_xaxis:
+        plt.axhline(y=0, color='k')
+    if log:
+        plt.yscale('log')
+    if legend:
+        plt.legend()
+    plt.show()
+
+
 def plot_experiment_results(results: ExperimentResultsDimInd):
     """Plot results of dimensions-inducing points experiment."""
     dimensions = results.dimensions
@@ -21,31 +37,11 @@ def plot_experiment_results(results: ExperimentResultsDimInd):
 
     slice_idx = 0
     print(f'Slice inducing points: {num_inducings[slice_idx]}')
-    divergences_slice = results.divergences[:, slice_idx]
-    plt.plot(dimensions, divergences_slice)
-    plt.plot(dimensions, [0] * len(divergences_slice))
-    plt.xlabel("Input dimension")
-    plt.ylabel("Divergence")
-    plt.show()
+    plot_slice(slice_idx, dimensions, [(results.divergences, None)], 'Input dimension', 'Divergence', show_xaxis=True)
 
-    plt.plot(dimensions, results.mses_sparse[:, slice_idx], label='sparse')
-    plt.plot(dimensions, results.mses_full[:, slice_idx], label='full')
-    plt.plot(dimensions, results.mse_bayesian_ridge[:, slice_idx], label='bayesian_ridge')
-    plt.yscale('log')
+    plot_slice(slice_idx, dimensions, [(results.mses_sparse, 'sparse'), (results.mses_full, 'full'), (results.mse_bayesian_ridge, 'bayesian_ridge')], "Input dimension", "MSE", legend=True, log=True)
 
-    plt.xlabel("Input dimension")
-    plt.ylabel("MSE")
-    plt.legend()
-    plt.show()
-
-    plt.plot(dimensions, results.logKy_full[:, slice_idx], label='sparse')
-    plt.plot(dimensions, results.logKy_sparse[:, slice_idx], label='full')
-    # plt.yscale('log')
-
-    plt.xlabel("Input dimension")
-    plt.ylabel("log|Ky|")
-    plt.legend()
-    plt.show()
+    plot_slice(slice_idx, dimensions, [(results.logKy_full, 'full'), (results.logKy_sparse, 'sparse')], 'Input dimension', 'log|Ky|', legend=True)
 
 
 if __name__ == '__main__':
