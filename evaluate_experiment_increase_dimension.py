@@ -30,10 +30,20 @@ def plot_experiment_results(results: ExperimentResultsDimInd):
 
     plt.plot(dimensions, results.mses_sparse[:, slice_idx], label='sparse')
     plt.plot(dimensions, results.mses_full[:, slice_idx], label='full')
+    plt.plot(dimensions, results.mse_bayesian_ridge[:, slice_idx], label='bayesian_ridge')
     # plt.yscale('log')
 
     plt.xlabel("Input dimension")
     plt.ylabel("MSE")
+    plt.legend()
+    plt.show()
+
+    plt.plot(dimensions, results.logKy_full[:, slice_idx], label='sparse')
+    plt.plot(dimensions, results.logKy_sparse[:, slice_idx], label='full')
+    # plt.yscale('log')
+
+    plt.xlabel("Input dimension")
+    plt.ylabel("log|Ky|")
     plt.legend()
     plt.show()
 

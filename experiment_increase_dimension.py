@@ -14,8 +14,8 @@ def main():
     dimensions = [1, 2, 3, 4, 5, 10, 15, 20]
 
     experiments = [
-        Experiment('linear', LinearSimulator, GPy.kern.Linear, dimensions, inducing_points),
         Experiment('rbf', RBFSimulator, GPy.kern.RBF, dimensions, inducing_points),
+        Experiment('linear', LinearSimulator, GPy.kern.Linear, dimensions, inducing_points),
     ]
     for experiment in experiments:
         run_single_experiment(experiment.tag, experiment.kernel, experiment.simulator, n, experiment.dimensions,

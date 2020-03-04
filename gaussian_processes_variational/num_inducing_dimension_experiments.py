@@ -7,8 +7,11 @@ import numpy as np
 import tqdm
 from matplotlib import pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
+from sklearn.exceptions import DataConversionWarning
+from sklearn.metrics import mean_squared_error
 
-from gaussian_processes_variational.compare import find_mse, diff_marginal_likelihoods, calc_K_tilda
+from gaussian_processes_variational.compare import find_mse, diff_marginal_likelihoods, calc_K_tilda, find_logKy
+from gaussian_processes_variational.non_gp_alternatives import bayesian_ridge_regression
 from run_single import create_full_gp, create_sparse_gp
 
 
@@ -25,6 +28,9 @@ class ExperimentResults(object):
         self.traces = self._init_results_matrix()
         self.log_determinants = self._init_results_matrix()
         self.runtime = self._init_results_matrix()
+        self.mse_bayesian_ridge = self._init_results_matrix()
+        self.logKy_full = self._init_results_matrix()
+        self.logKy_sparse = self._init_results_matrix()
 
     @property
     def len_row_labels(self):
@@ -134,6 +140,12 @@ def run_single_experiment(tag: str, kernel_type, simulator_type, n: int, dimensi
 
         kernel_full = gp_kernel_type(dim)
         m_full = create_full_gp(data.X_train, data.y_train, kernel_full)
+        results.logKy_full[i, :] = find_logKy(data.X_train, m_full)
+        z_bayesian_ridge, _ = bayesian_ridge_regression(data.X_train, data.y_train, data.X_test)
+        try:
+            results.mse_bayesian_ridge[i,:] = mean_squared_error(data.y_test.ravel(), z_bayesian_ridge)
+        except DataConversionWarning:
+            pass # Gives warning even though shapes are correct and the outputs are correct
         for j in range(len(num_inducings)):
             num_inducing = num_inducings[j]
             kernel_sparse = gp_kernel_type(dim)
@@ -150,5 +162,8 @@ def run_single_experiment(tag: str, kernel_type, simulator_type, n: int, dimensi
             K_tilda = calc_K_tilda(kernel_sparse, data.X_train, Z)
             results.traces[i, j] = np.trace(K_tilda)
             _, results.log_determinants[i, j] = np.linalg.slogdet(K_tilda)
+            results.logKy_sparse[i, j] = find_logKy(data.X_train, m_sparse)
 
     pickle.dump(results, open(os.path.join('results', results.fname), "wb"))
+
+

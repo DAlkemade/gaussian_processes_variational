@@ -77,3 +77,25 @@ def calc_metric3(K_tilda):
     diff = trace - log_determinant
     print(trace, log_determinant, diff)
     return diff
+
+
+def find_logKy(X_train, model):
+    Knn = model.kern.K(X_train, X_train)
+    # try:
+    #     variance = kernel_full.variance
+    # except AttributeError:  # Some kernels use a different attribute name
+    #     variance = kernel_full.variances
+    # if variance.size == 1:
+    #     variance_valuez = variance.max()
+    #     variance_value = variance_valuez[0]
+    # else:
+    #     raise NotImplementedError("Only implemented for a single variance")
+    variance_value = model.likelihood.variance
+    variance_value = float(variance_value)
+    variances = [variance_value] * len(Knn)
+    Isigma2 = np.diag(variances)
+    Ky = Knn + Isigma2
+    _, logKy = np.linalg.slogdet(Ky)
+    # noiseless = model.predict_noiseless(X_train, full_cov=True)
+    # not_noiseless = model.predict(X_train, full_cov=True)
+    return logKy

@@ -7,7 +7,7 @@ import GPy
 import matplotlib.pyplot as plt
 import numpy as np
 
-from gaussian_processes_variational.compare import diff_marginal_likelihoods, find_mse
+from gaussian_processes_variational.compare import diff_marginal_likelihoods, find_mse, find_logKy
 from gaussian_processes_variational.non_gp_alternatives import fit_svm, linear_regression
 from gaussian_processes_variational.simulation import LinearSimulator, FriedMan1Simulator, RBFSimulator
 
@@ -114,6 +114,7 @@ def evaluate_sparse_gp(X_test: np.array, y_test: np.array, m_sparse, m_full):
     # Show covar of inducing inputs and of full gp
     plot_covariance_matrix(m_sparse.posterior.covariance)
 
+
     if X_test is not None:
         mse_test_sparse = find_mse(m_sparse, X_test, y_test)
         mse_test_full = find_mse(m_full, X_test, y_test)
@@ -168,6 +169,8 @@ def main():
 
     # Evaluate
     evaluate_sparse_gp(data.X_test, data.y_test, m_sparse, m_full)
+    print(find_logKy(data.X_train, m_sparse))
+
 
     # Test SVM and Linear Regression
     fit_svm(data.X_train, data.y_train, plot=plot)
