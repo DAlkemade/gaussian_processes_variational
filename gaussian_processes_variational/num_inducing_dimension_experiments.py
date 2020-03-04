@@ -52,7 +52,10 @@ def run_single_experiment(tag: str, kernel_type, simulator_type, n: int, dimensi
             if fixedparameters.fix_gaussian_noise_variance:
                 m_sparse.Gaussian_noise.variance = m_full.Gaussian_noise.variance
             if fixedparameters.fix_lengthscale:
-                m_sparse.kern.lengthscale = m_full.kern.lengthscale
+                try:
+                    m_sparse.kern.lengthscale = m_full.kern.lengthscale
+                except AttributeError:
+                    pass # Some kernels don't have a lengthscale
 
             results.runtime[i, j] = time.time() - before
             mse_full = find_mse(m_full, data.X_test, data.y_test)

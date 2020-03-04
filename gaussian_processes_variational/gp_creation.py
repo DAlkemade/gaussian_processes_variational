@@ -78,7 +78,10 @@ def create_sparse_gp(X, y, kernel, num_inducing, fixedparameters: FixedParameter
         except AttributeError:
             m.kern.variances.fix()
     if fixedparameters.fix_lengthscale:
-        m.kern.lengthscale.fix()
+        try:
+            m.kern.lengthscale.fix()
+        except AttributeError:
+            pass # some kernels don't have a lengthscale
 
     m.optimize(optimizer=optimizer)
     if plot:
