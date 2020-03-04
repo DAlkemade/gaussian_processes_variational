@@ -73,7 +73,10 @@ def create_sparse_gp(X, y, kernel, num_inducing, fixedparameters: FixedParameter
     if fixedparameters.fix_gaussian_noise_variance:
         m.Gaussian_noise.variance.fix()
     if fixedparameters.fix_variance:
-        m.kern.variance.fix()
+        try:
+            m.kern.variance.fix()
+        except AttributeError:
+            m.kern.variances.fix()
     if fixedparameters.fix_lengthscale:
         m.kern.lengthscale.fix()
 
