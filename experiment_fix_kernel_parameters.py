@@ -13,10 +13,12 @@ def main():
     n = 801
     inducing_points = [1, 2, 3, 4, 5, 10, 20, 50, 100, 200, 300, 400, n]
     dimensions = [1, 2, 3, 4, 5, 10, 15, 20]
+    dimensions_linear = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] + list(range(15, n, 50)) + [891]
+
 
     experiments = [
         Experiment('rbf_fix_covariance', RBFSimulator, GPy.kern.RBF, dimensions, inducing_points),
-        Experiment('linear_fix_covariance', LinearSimulator, GPy.kern.Linear, dimensions, inducing_points),
+        Experiment('linear_high_dim_fix_covariance', LinearSimulator, GPy.kern.Linear, dimensions_linear, [50]),
     ]
     opt_settings = FixedParameterSettings(fix_variance=True, fix_gaussian_noise_variance=True, fix_lengthscale=True)
     for experiment in experiments:
