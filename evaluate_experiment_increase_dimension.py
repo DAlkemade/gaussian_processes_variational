@@ -3,7 +3,7 @@ import numpy as np
 import pickle
 from decimal import Decimal
 
-from gaussian_processes_variational.num_inducing_dimension_experiments import ExperimentResultsDimInd
+from gaussian_processes_variational.experiment_data_containers import ExperimentResultsDimInd
 
 
 def plot_experiment_results(results: ExperimentResultsDimInd):
@@ -49,5 +49,5 @@ def plot_experiment_results(results: ExperimentResultsDimInd):
 
 
 if __name__ == '__main__':
-    results = pickle.load(open('results/results_linear_high_dim.p', "rb"))
+    results = pickle.load(open('results/results_rbf_fix_covariance.p', "rb"))
     plot_experiment_results(results)

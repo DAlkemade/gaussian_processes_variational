@@ -3,6 +3,7 @@ from collections import namedtuple
 import GPy
 
 from gaussian_processes_variational.num_inducing_dimension_experiments import run_single_experiment
+from gaussian_processes_variational.parameter_containers import FixedParameterSettings
 from gaussian_processes_variational.simulation import LinearSimulator
 
 
@@ -17,7 +18,7 @@ def main():
     ]
     for experiment in experiments:
         run_single_experiment(experiment.tag, experiment.kernel, experiment.simulator, n, experiment.dimensions,
-                              experiment.num_inducings)
+                              experiment.num_inducings, FixedParameterSettings())
 
 
 if __name__ == "__main__":

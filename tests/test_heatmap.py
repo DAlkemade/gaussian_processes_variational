@@ -1,6 +1,6 @@
 import numpy as np
 
-from gaussian_processes_variational.num_inducing_dimension_experiments import ExperimentResultsDimInd
+from gaussian_processes_variational.experiment_data_containers import ExperimentResultsDimInd
 
 
 def test_nan_response():

@@ -15,12 +15,13 @@ def main():
     dimensions = [1, 2, 3, 4, 5, 10, 15, 20]
 
     experiments = [
-        Experiment('rbf', RBFSimulator, GPy.kern.RBF, dimensions, inducing_points),
-        Experiment('linear', LinearSimulator, GPy.kern.Linear, dimensions, inducing_points),
+        Experiment('rbf_fix_covariance', RBFSimulator, GPy.kern.RBF, dimensions, inducing_points),
+        Experiment('linear_fix_covariance', LinearSimulator, GPy.kern.Linear, dimensions, inducing_points),
     ]
+    opt_settings = FixedParameterSettings(fix_variance=True, fix_gaussian_noise_variance=True, fix_lengthscale=True)
     for experiment in experiments:
         run_single_experiment(experiment.tag, experiment.kernel, experiment.simulator, n, experiment.dimensions,
-                              experiment.num_inducings, FixedParameterSettings())
+                              experiment.num_inducings, opt_settings)
 
 
 if __name__ == "__main__":
