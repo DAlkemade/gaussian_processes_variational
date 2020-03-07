@@ -8,6 +8,7 @@ import numpy as np
 
 from gaussian_processes_variational.compare import find_logKy
 from gaussian_processes_variational.non_gp_alternatives import fit_svm, linear_regression
+from gaussian_processes_variational.parameter_containers import FixedParameterSettings
 from gaussian_processes_variational.simulation import LinearSimulator, FriedMan1Simulator, RBFSimulator
 from gaussian_processes_variational.gp_creation import create_full_gp, create_kernel, create_sparse_gp, \
     evaluate_sparse_gp
@@ -23,7 +24,7 @@ def main():
     """Run the experiment using a certain config defined in the config file."""
     # Read config
     parser = ArgumentParser()
-    parser.add_argument('--config', type=str, default='playground.ini')
+    parser.add_argument('--config', type=str, default='linear_leads_to_error.ini')
     args = parser.parse_args()
     config = configparser.ConfigParser()
     config.read(os.path.join('configs', args.config))
@@ -62,7 +63,7 @@ def main():
     # Create GPs
 
     m_full = create_full_gp(data.X_train, data.y_train, kernel, plot=plot)
-    m_sparse = create_sparse_gp(data.X_train, data.y_train, kernel_sparse, num_inducing, plot=plot)
+    m_sparse = create_sparse_gp(data.X_train, data.y_train, kernel_sparse, num_inducing, FixedParameterSettings(), plot=plot)
 
     # Evaluate
     evaluate_sparse_gp(data.X_test, data.y_test, m_sparse, m_full)
