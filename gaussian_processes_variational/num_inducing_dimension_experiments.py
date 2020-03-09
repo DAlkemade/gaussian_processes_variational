@@ -14,7 +14,7 @@ from gaussian_processes_variational.non_gp_alternatives import bayesian_ridge_re
 
 def run_single_experiment(tag: str, kernel_type, simulator_type, n: int, dimensions: list, num_inducings: list,
                           fixedparameters,
-                          fix_dimension_at: int = None):
+                          fix_dimension_at: int = None, ARD=False):
     """Run experiment with changing number of inducing variables."""
     print(f'Running with kernel {kernel_type} and data simulator {simulator_type}')
     gp_kernel_type = kernel_type
@@ -34,14 +34,14 @@ def run_single_experiment(tag: str, kernel_type, simulator_type, n: int, dimensi
             print("Data simulation went wrong, skipping this one")
             continue
 
-        kernel_full = gp_kernel_type(dim)
+        kernel_full = gp_kernel_type(dim, ARD=ARD)
         m_full = create_full_gp(data.X_train, data.y_train, kernel_full)
         results.logKy_full[i, :] = find_logKy(data.X_train, m_full)
         z_bayesian_ridge, _ = bayesian_ridge_regression(data.X_train, data.y_train, data.X_test)
         results.mse_bayesian_ridge[i, :] = mean_squared_error(np.ravel(data.y_test), z_bayesian_ridge)
         for j in range(len(num_inducings)):
             num_inducing = num_inducings[j]
-            kernel_sparse = gp_kernel_type(dim)
+            kernel_sparse = gp_kernel_type(dim, ARD=ARD)
             before = time.time()
             m_sparse = create_sparse_gp(data.X_train, data.y_train, kernel_sparse, num_inducing, fixedparameters)
             if fixedparameters.fix_variance:

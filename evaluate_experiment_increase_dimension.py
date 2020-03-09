@@ -1,7 +1,8 @@
+import os
+import pickle
+
 import matplotlib.pyplot as plt
 import numpy as np
-import pickle
-import os
 
 from gaussian_processes_variational.experiment_data_containers import ExperimentResultsDimInd
 
@@ -26,7 +27,6 @@ def plot_slice(slice_idx: int, x_values: np.array, array_tuples, xlabel: str, yl
     plt.show()
 
 
-
 def plot_experiment_results(results: ExperimentResultsDimInd):
     """Plot results of dimensions-inducing points experiment."""
     dimensions = results.dimensions
@@ -42,7 +42,8 @@ def plot_experiment_results(results: ExperimentResultsDimInd):
 
     slice_idx = 0
     print(f'Slice inducing points: {num_inducings[slice_idx]}')
-    plot_slice(slice_idx, dimensions, [(results.divergences, None)], 'Input dimension', 'Divergence', show_xaxis=True)
+    plot_slice(slice_idx, dimensions, [(results.divergences, None)], 'Input dimension', 'Divergence', show_xaxis=True,
+               log=True)
 
     plot_slice(slice_idx, dimensions, [(results.mses_sparse, 'sparse'), (results.mses_full, 'full'),
                                        (results.mse_bayesian_ridge, 'bayesian_ridge')], "Input dimension", "MSE",
@@ -50,6 +51,9 @@ def plot_experiment_results(results: ExperimentResultsDimInd):
 
     plot_slice(slice_idx, dimensions, [(results.logKy_sparse, 'sparse'), (results.logKy_full, 'full')],
                'Input dimension', 'log|Ky|', legend=True)
+
+    plot_slice(slice_idx, dimensions, [(results.traces, None)],
+               'Input dimension', 'Tr(Ktilda)', legend=False, log=True)
 
 
 if __name__ == '__main__':
